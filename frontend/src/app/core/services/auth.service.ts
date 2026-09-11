@@ -42,7 +42,7 @@ export class AuthService {
   }
 
   changePassword(request: ChangePasswordRequest): Observable<void> {
-    return this.http.post<void>(`${environment.apiUrl}/users/me/change-password`, request).pipe(
+    return this.http.post<void>(`${environment.apiUrl}/auth/change-password`, request).pipe(
       tap(() => {
         // A senha provisória deixou de valer: limpa a flag local sem precisar de novo login.
         const current = this.session();

@@ -261,44 +261,6 @@ export interface UpsertAppointmentRequest {
   notes: string | null;
 }
 
-export enum UserRole { Corretor = 1, Gestor = 2, Admin = 3 }
-
-export const USER_ROLE_LABEL: Record<UserRole, string> = {
-  [UserRole.Corretor]: "Corretor",
-  [UserRole.Gestor]: "Gestor",
-  [UserRole.Admin]: "Administrador",
-};
-
-export interface TeamMember {
-  id: string;
-  name: string;
-  email: string;
-  role: UserRole;
-  isActive: boolean;
-  mustChangePassword: boolean;
-  lastLoginAtUtc: string | null;
-  createdAtUtc: string;
-}
-
-export interface CreateUserRequest {
-  name: string;
-  email: string;
-  role: UserRole;
-}
-
-export interface CreatedUser {
-  id: string;
-  name: string;
-  email: string;
-  initialPassword: string;
-}
-
-export interface UpdateUserRequest {
-  name: string;
-  role: UserRole;
-  isActive: boolean;
-}
-
 export interface ChangePasswordRequest {
   currentPassword: string;
   newPassword: string;

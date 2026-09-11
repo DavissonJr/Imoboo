@@ -9,7 +9,6 @@ using ImobooCRM.Application.Messaging;
 using ImobooCRM.Application.PlatformAdmin;
 using ImobooCRM.Application.Properties;
 using ImobooCRM.Application.Settings;
-using ImobooCRM.Application.Users;
 using ImobooCRM.Infrastructure.Ai;
 using ImobooCRM.Infrastructure.BackgroundJobs;
 using ImobooCRM.Infrastructure.Caching;
@@ -115,7 +114,6 @@ public static class DependencyInjection
         services.AddScoped<IDashboardService, DashboardService>();
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IAppointmentService, AppointmentService>();
-        services.AddScoped<IUserService, UserService>();
         services.AddScoped<IPlatformAdminService, PlatformAdminService>();
         services.AddScoped<ITenantSettingsService, TenantSettingsService>();
         services.AddScoped<ILeadPreferenceExtractor, LeadPreferenceExtractor>();

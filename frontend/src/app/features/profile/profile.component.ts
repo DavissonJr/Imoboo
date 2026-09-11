@@ -1,6 +1,5 @@
 import { Component, OnInit, inject, signal } from "@angular/core";
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from "@angular/forms";
-import { RouterLink } from "@angular/router";
 import { TenantSettings } from "../../core/models";
 import { AuthService } from "../../core/services/auth.service";
 import { SettingsService } from "../../core/services/settings.service";
@@ -8,7 +7,7 @@ import { SettingsService } from "../../core/services/settings.service";
 @Component({
   selector: "app-profile",
   standalone: true,
-  imports: [ReactiveFormsModule, FormsModule, RouterLink],
+  imports: [ReactiveFormsModule, FormsModule],
   template: `
     <section class="page">
       <header class="page__head">
@@ -25,10 +24,6 @@ import { SettingsService } from "../../core/services/settings.service";
             <dt>Perfil</dt><dd>{{ auth.user()?.role }}</dd>
             <dt>Imobiliária</dt><dd>{{ auth.user()?.tenantName }}</dd>
           </dl>
-
-          @if (auth.isAdmin()) {
-            <a routerLink="/equipe" class="btn">Gerenciar equipe</a>
-          }
         </section>
 
         <section class="panel card">
