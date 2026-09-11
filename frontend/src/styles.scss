@@ -1,0 +1,178 @@
+/*
+  Sistema visual do ImobooCRM.
+
+  Principio: cor saturada e reservada para o estado do atendimento.
+  Se algo esta colorido, e porque o corretor precisa decidir algo.
+  O resto e tinta sobre papel.
+*/
+
+:root {
+  /* superficie */
+  --canvas: #eceee9;
+  --surface: #ffffff;
+  --surface-sunken: #f5f6f3;
+  --rule: #d5d9d2;
+  --rule-strong: #b9bfb6;
+
+  /* tinta */
+  --ink: #16212c;
+  --ink-soft: #55636f;
+  --ink-faint: #8b959e;
+  --ink-inverse: #ffffff;
+
+  /* estado do atendimento — as unicas cores fortes do sistema */
+  --state-auto: #1b7f5c;      /* IA conduzindo */
+  --state-auto-bg: #e2f0ea;
+  --state-wait: #a55f00;      /* esperando o corretor */
+  --state-wait-bg: #faeedb;
+  --state-human: #2b5ea6;     /* corretor assumiu */
+  --state-human-bg: #e3ebf7;
+  --state-closed: #6d7780;
+  --state-closed-bg: #eceef0;
+
+  --danger: #a32c2c;
+
+  /* forma */
+  --radius: 6px;
+  --radius-lg: 10px;
+  --shadow: 0 1px 2px rgba(22, 33, 44, 0.08);
+
+  /* espaco */
+  --gap-xs: 4px;
+  --gap-sm: 8px;
+  --gap: 16px;
+  --gap-lg: 24px;
+  --gap-xl: 40px;
+
+  /* tipografia */
+  --font: "Instrument Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-code: "IBM Plex Mono", ui-monospace, monospace;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  background: var(--canvas);
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4 { margin: 0; font-weight: 600; line-height: 1.25; }
+h1 { font-size: 24px; letter-spacing: -0.02em; }
+h2 { font-size: 19px; letter-spacing: -0.01em; }
+h3 { font-size: 16px; }
+p { margin: 0 0 var(--gap); max-width: 68ch; }
+
+a { color: var(--state-human); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+:focus-visible {
+  outline: 2px solid var(--state-human);
+  outline-offset: 2px;
+}
+
+/* Codigo de imovel: identificador de largura fixa, alinha em coluna. */
+.code {
+  font-family: var(--font-code);
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  color: var(--ink-soft);
+}
+
+/* --- controles --- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--gap-sm);
+  padding: 8px 14px;
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-weight: 500;
+  cursor: pointer;
+}
+.btn:hover { background: var(--surface-sunken); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn--primary {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--ink-inverse);
+}
+.btn--primary:hover { background: #0d1720; }
+
+.btn--quiet { border-color: transparent; background: transparent; }
+.btn--quiet:hover { background: var(--surface-sunken); }
+
+.field { display: flex; flex-direction: column; gap: var(--gap-xs); margin-bottom: var(--gap); }
+.field > label { font-size: 13px; font-weight: 500; color: var(--ink-soft); }
+
+input, select, textarea {
+  padding: 9px 11px;
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  width: 100%;
+}
+input:focus, select:focus, textarea:focus {
+  border-color: var(--ink-soft);
+  outline: none;
+}
+
+.error-text { color: var(--danger); font-size: 13px; }
+
+/* --- estruturas recorrentes --- */
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-lg);
+}
+
+.state-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 8px;
+  border-radius: 100px;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.state-tag--auto   { background: var(--state-auto-bg);   color: var(--state-auto); }
+.state-tag--wait   { background: var(--state-wait-bg);   color: var(--state-wait); }
+.state-tag--human  { background: var(--state-human-bg);  color: var(--state-human); }
+.state-tag--closed { background: var(--state-closed-bg); color: var(--state-closed); }
+
+.empty {
+  padding: var(--gap-xl) var(--gap-lg);
+  text-align: center;
+  color: var(--ink-soft);
+}
+.empty h3 { margin-bottom: var(--gap-xs); color: var(--ink); }
+
+table { width: 100%; border-collapse: collapse; }
+th {
+  text-align: left;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-soft);
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--rule);
+}
+td { padding: 12px 14px; border-bottom: 1px solid var(--rule); }
+tbody tr:last-child td { border-bottom: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}

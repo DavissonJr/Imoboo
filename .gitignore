@@ -1,0 +1,19 @@
+# .NET
+bin/
+obj/
+*.user
+.vs/
+
+# Node
+node_modules/
+dist/
+.angular/
+
+# Segredos e ambiente
+.env
+*.local.json
+appsettings.Local.json
+
+# Sistema
+.DS_Store
+Thumbs.db
