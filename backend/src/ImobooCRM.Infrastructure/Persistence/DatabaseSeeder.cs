@@ -44,7 +44,8 @@ public static class DatabaseSeeder
             Name = "Corretor Demo",
             Email = "corretor@demo.com",
             PasswordHash = hasher.Hash("Demo@123"),
-            Role = UserRole.Admin
+            Role = UserRole.Admin,
+            IsPlatformAdmin = true
         });
 
         db.Properties.AddRange(

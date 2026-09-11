@@ -73,7 +73,7 @@ import { PropertyService } from "../../core/services/property.service";
               <label for="type">Tipo</label>
               <select id="type" formControlName="type">
                 @for (t of typeOptions; track t.value) {
-                  <option [value]="t.value">{{ t.label }}</option>
+                  <option [ngValue]="t.value">{{ t.label }}</option>
                 }
               </select>
             </div>
@@ -142,7 +142,7 @@ import { PropertyService } from "../../core/services/property.service";
                   <td>
                     <select [ngModel]="a.status" [ngModelOptions]="{standalone: true}" (ngModelChange)="changeStatus(a, $event)">
                       @for (s of statusOptions; track s.value) {
-                        <option [value]="s.value">{{ s.label }}</option>
+                        <option [ngValue]="s.value">{{ s.label }}</option>
                       }
                     </select>
                   </td>
@@ -211,8 +211,8 @@ export class AppointmentListComponent implements OnInit, OnDestroy {
   readonly selectedProperty = signal<PropertyListItem | null>(null);
   readonly propertyTerm$ = new Subject<string>();
 
-  readonly typeOptions = Object.entries(APPOINTMENT_TYPE_LABEL).map(([value, label]) => ({ value, label }));
-  readonly statusOptions = Object.entries(APPOINTMENT_STATUS_LABEL).map(([value, label]) => ({ value, label }));
+  readonly typeOptions = Object.entries(APPOINTMENT_TYPE_LABEL).map(([value, label]) => ({ value: Number(value) as AppointmentType, label }));
+  readonly statusOptions = Object.entries(APPOINTMENT_STATUS_LABEL).map(([value, label]) => ({ value: Number(value) as AppointmentStatus, label }));
 
   readonly form = inject(FormBuilder).nonNullable.group({
     type: [AppointmentType.Visita, Validators.required],

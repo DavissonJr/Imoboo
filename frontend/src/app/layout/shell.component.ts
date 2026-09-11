@@ -20,10 +20,16 @@ import { AuthService } from "../core/services/auth.service";
           <li><a routerLink="/leads" routerLinkActive="is-active">Leads</a></li>
           <li><a routerLink="/imoveis" routerLinkActive="is-active">Imóveis</a></li>
           <li><a routerLink="/agendamentos" routerLinkActive="is-active">Agendamentos</a></li>
+          @if (auth.isAdmin()) {
+            <li><a routerLink="/equipe" routerLinkActive="is-active">Equipe</a></li>
+          }
+          @if (auth.isPlatformAdmin()) {
+            <li><a routerLink="/contas" routerLinkActive="is-active">Contas</a></li>
+          }
         </ul>
 
         <div class="rail__foot">
-          <span class="rail__user">{{ auth.user()?.name }}</span>
+          <a routerLink="/perfil" routerLinkActive="is-active" class="rail__user">{{ auth.user()?.name }}</a>
           <button type="button" class="btn btn--quiet" (click)="auth.logout()">Sair</button>
         </div>
       </nav>

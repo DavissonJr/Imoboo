@@ -1,10 +1,22 @@
 import { Routes } from "@angular/router";
+import { adminGuard } from "./core/guards/admin.guard";
 import { authGuard } from "./core/guards/auth.guard";
+import { platformAdminGuard } from "./core/guards/platform-admin.guard";
 
 export const routes: Routes = [
   {
+    path: "",
+    pathMatch: "full",
+    loadComponent: () => import("./features/landing/landing.component").then((m) => m.LandingComponent),
+  },
+  {
     path: "entrar",
     loadComponent: () => import("./features/auth/login.component").then((m) => m.LoginComponent),
+  },
+  {
+    path: "primeiro-acesso",
+    canActivate: [authGuard],
+    loadComponent: () => import("./features/onboarding/onboarding.component").then((m) => m.OnboardingComponent),
   },
   {
     path: "",
@@ -46,6 +58,23 @@ export const routes: Routes = [
         path: "agendamentos",
         loadComponent: () =>
           import("./features/appointments/appointment-list.component").then((m) => m.AppointmentListComponent),
+      },
+      {
+        path: "perfil",
+        loadComponent: () =>
+          import("./features/profile/profile.component").then((m) => m.ProfileComponent),
+      },
+      {
+        path: "equipe",
+        canActivate: [adminGuard],
+        loadComponent: () =>
+          import("./features/team/team.component").then((m) => m.TeamComponent),
+      },
+      {
+        path: "contas",
+        canActivate: [platformAdminGuard],
+        loadComponent: () =>
+          import("./features/platform-accounts/platform-accounts.component").then((m) => m.PlatformAccountsComponent),
       },
     ],
   },

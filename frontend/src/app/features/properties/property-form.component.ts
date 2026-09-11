@@ -80,7 +80,7 @@ const REQUIRED_FIELDS: Record<string, string> = {
               <label for="type">Tipo</label>
               <select id="type" formControlName="type">
                 @for (t of typeOptions; track t.value) {
-                  <option [value]="t.value">{{ t.label }}</option>
+                  <option [ngValue]="t.value">{{ t.label }}</option>
                 }
               </select>
             </div>
@@ -88,7 +88,7 @@ const REQUIRED_FIELDS: Record<string, string> = {
               <label for="purpose">Finalidade</label>
               <select id="purpose" formControlName="purpose">
                 @for (p of purposeOptions; track p.value) {
-                  <option [value]="p.value">{{ p.label }}</option>
+                  <option [ngValue]="p.value">{{ p.label }}</option>
                 }
               </select>
             </div>
@@ -96,7 +96,7 @@ const REQUIRED_FIELDS: Record<string, string> = {
               <label for="status">Situação</label>
               <select id="status" formControlName="status">
                 @for (s of statusOptions; track s.value) {
-                  <option [value]="s.value">{{ s.label }}</option>
+                  <option [ngValue]="s.value">{{ s.label }}</option>
                 }
               </select>
             </div>
@@ -342,9 +342,9 @@ export class PropertyFormComponent implements OnInit, OnDestroy {
   private assignedUserId: string | null = null;
   private acceptsExchange = false;
 
-  readonly typeOptions = Object.entries(PROPERTY_TYPE_LABEL).map(([value, label]) => ({ value, label }));
-  readonly purposeOptions = Object.entries(PROPERTY_PURPOSE_LABEL).map(([value, label]) => ({ value, label }));
-  readonly statusOptions = Object.entries(PROPERTY_STATUS_LABEL).map(([value, label]) => ({ value, label }));
+  readonly typeOptions = Object.entries(PROPERTY_TYPE_LABEL).map(([value, label]) => ({ value: Number(value) as PropertyType, label }));
+  readonly purposeOptions = Object.entries(PROPERTY_PURPOSE_LABEL).map(([value, label]) => ({ value: Number(value) as PropertyPurpose, label }));
+  readonly statusOptions = Object.entries(PROPERTY_STATUS_LABEL).map(([value, label]) => ({ value: Number(value) as PropertyStatus, label }));
 
   readonly form = inject(FormBuilder).nonNullable.group({
     code: ["", [Validators.required, Validators.maxLength(40)]],

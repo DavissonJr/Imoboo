@@ -13,5 +13,6 @@ public interface IPasswordHasher
 
 public interface IJwtTokenService
 {
-    string CreateToken(Guid userId, Guid tenantId, string email, string role, out DateTime expiresAtUtc);
+    string CreateToken(
+        Guid userId, Guid tenantId, string email, string role, bool isPlatformAdmin, out DateTime expiresAtUtc);
 }

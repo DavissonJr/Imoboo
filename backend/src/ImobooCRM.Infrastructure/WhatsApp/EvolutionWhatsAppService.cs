@@ -62,6 +62,29 @@ public sealed class EvolutionWhatsAppService(
         }
     }
 
+    public async Task<string?> GetQrCodeAsync(string instanceName, CancellationToken ct = default)
+    {
+        try
+        {
+            var response = await http.GetAsync($"/instance/connect/{instanceName}", ct);
+            if (!response.IsSuccessStatusCode)
+            {
+                logger.LogWarning(
+                    "Falha ao obter QR code. Provider=evolution Instance={Instance} Status={Status}",
+                    instanceName, (int)response.StatusCode);
+                return null;
+            }
+
+            var result = await response.Content.ReadFromJsonAsync<QrCodeResponse>(ct);
+            return result?.Base64;
+        }
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
+        {
+            logger.LogWarning(ex, "Evolution indisponivel ao pedir QR code. Instance={Instance}", instanceName);
+            return null;
+        }
+    }
+
     private async Task<SendMessageResult> PostAsync(string path, object payload, CancellationToken ct)
     {
         try
@@ -102,4 +125,5 @@ public sealed class EvolutionWhatsAppService(
     private sealed record ConnectionStateResponse(
         [property: JsonPropertyName("instance")] InstanceState? Instance);
     private sealed record InstanceState([property: JsonPropertyName("state")] string? State);
+    private sealed record QrCodeResponse([property: JsonPropertyName("base64")] string? Base64);
 }

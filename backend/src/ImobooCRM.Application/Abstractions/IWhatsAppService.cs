@@ -9,6 +9,13 @@ public interface IWhatsAppService
     Task<SendMessageResult> SendTextAsync(SendTextRequest request, CancellationToken ct = default);
     Task<SendMessageResult> SendMediaAsync(SendMediaRequest request, CancellationToken ct = default);
     Task<bool> IsInstanceConnectedAsync(string instanceName, CancellationToken ct = default);
+
+    /// <summary>
+    /// Pede à Evolution o QR code para parear o número. Retorna null se a instância
+    /// já estiver conectada ou se o provedor não respondeu — quem chama decide como
+    /// tratar cada caso (a Application checa IsInstanceConnectedAsync antes).
+    /// </summary>
+    Task<string?> GetQrCodeAsync(string instanceName, CancellationToken ct = default);
 }
 
 public sealed record SendTextRequest(string InstanceName, string ToPhone, string Text);

@@ -23,6 +23,8 @@ export interface LoginResponse {
   email: string;
   role: string;
   tenantName: string;
+  mustChangePassword: boolean;
+  isPlatformAdmin: boolean;
 }
 
 export interface PropertyListItem {
@@ -257,4 +259,95 @@ export interface UpsertAppointmentRequest {
   type: AppointmentType;
   scheduledAtUtc: string;
   notes: string | null;
+}
+
+export enum UserRole { Corretor = 1, Gestor = 2, Admin = 3 }
+
+export const USER_ROLE_LABEL: Record<UserRole, string> = {
+  [UserRole.Corretor]: "Corretor",
+  [UserRole.Gestor]: "Gestor",
+  [UserRole.Admin]: "Administrador",
+};
+
+export interface TeamMember {
+  id: string;
+  name: string;
+  email: string;
+  role: UserRole;
+  isActive: boolean;
+  mustChangePassword: boolean;
+  lastLoginAtUtc: string | null;
+  createdAtUtc: string;
+}
+
+export interface CreateUserRequest {
+  name: string;
+  email: string;
+  role: UserRole;
+}
+
+export interface CreatedUser {
+  id: string;
+  name: string;
+  email: string;
+  initialPassword: string;
+}
+
+export interface UpdateUserRequest {
+  name: string;
+  role: UserRole;
+  isActive: boolean;
+}
+
+export interface ChangePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
+}
+
+export interface TenantSettings {
+  aiPersona: string | null;
+  evolutionInstanceName: string | null;
+  whatsAppConnected: boolean;
+  whatsAppNumber: string | null;
+  monthlyAiMessageLimit: number;
+  monthlyAiMessageCount: number;
+}
+
+export interface UpdateTenantSettingsRequest {
+  aiPersona: string | null;
+  evolutionInstanceName: string | null;
+}
+
+export interface WhatsAppQrCode {
+  base64Image: string | null;
+  alreadyConnected: boolean;
+}
+
+/** Uma conta = um tenant inteiro (corretor autônomo), não um usuário do mesmo tenant. */
+export interface PlatformAccount {
+  tenantId: string;
+  tenantName: string;
+  tenantIsActive: boolean;
+  ownerUserId: string;
+  ownerName: string;
+  ownerEmail: string;
+  mustChangePassword: boolean;
+  whatsAppConnected: boolean;
+  whatsAppNumber: string | null;
+  propertiesCount: number;
+  lastLoginAtUtc: string | null;
+  createdAtUtc: string;
+}
+
+export interface CreateAccountRequest {
+  tenantName: string;
+  ownerName: string;
+  ownerEmail: string;
+}
+
+export interface CreatedAccount {
+  tenantId: string;
+  ownerUserId: string;
+  ownerEmail: string;
+  initialPassword: string;
 }
