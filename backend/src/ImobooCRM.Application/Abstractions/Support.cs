@@ -24,4 +24,11 @@ public interface IJwtTokenService
 public interface IPublicLinkBuilder
 {
     string CatalogUrl(string tenantSlug);
+
+    /// <summary>
+    /// URL que a própria Evolution deve chamar quando uma mensagem chega — não é
+    /// pública como o catálogo, é interna (mesma rede Docker), por isso vem de
+    /// uma configuração separada da URL do frontend.
+    /// </summary>
+    string WebhookUrl(string webhookToken);
 }

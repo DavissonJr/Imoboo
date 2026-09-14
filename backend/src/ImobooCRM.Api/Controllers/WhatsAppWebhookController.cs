@@ -29,9 +29,12 @@ public sealed class WhatsAppWebhookController(
     [HttpPost("evolution")]
     public async Task<IActionResult> Receive(
         [FromBody] EvolutionWebhookPayload payload,
-        [FromHeader(Name = "x-webhook-token")] string? token,
+        [FromHeader(Name = "x-webhook-token")] string? headerToken,
+        [FromQuery(Name = "token")] string? queryToken,
         CancellationToken ct)
     {
+        var token = headerToken ?? queryToken;
+
         // 200 mesmo em payload inutil: 4xx faz a Evolution reentregar sem necessidade.
         if (payload.Data?.Key is null || string.IsNullOrWhiteSpace(payload.Instance))
             return Ok(new { ignored = "payload_incompleto" });

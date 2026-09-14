@@ -149,6 +149,51 @@ public sealed class EvolutionWhatsAppService(
         }
     }
 
+    /// <summary>
+    /// Formato confirmado na documentacao oficial: POST /webhook/set/{instance},
+    /// eventos em maiusculo com underscore na configuracao — mas o payload que chega
+    /// no nosso endpoint usa "messages.upsert" minusculo. Confusao conhecida da propria
+    /// Evolution, nao e engano nosso.
+    /// </summary>
+    public async Task<bool> SetWebhookAsync(string instanceName, string webhookUrl, CancellationToken ct = default)
+    {
+        try
+        {
+            var payload = new
+            {
+                webhook = new
+                {
+                    enabled = true,
+                    url = webhookUrl,
+                    webhook_by_events = false,
+                    webhook_base64 = false,
+                    events = new[] { "MESSAGES_UPSERT" }
+                }
+            };
+
+            var response = await http.PostAsJsonAsync($"/webhook/set/{instanceName}", payload, ct);
+
+            if (response.IsSuccessStatusCode)
+            {
+                logger.LogInformation("Webhook configurado. Instance={Instance}", instanceName);
+                return true;
+            }
+
+            var body = await response.Content.ReadAsStringAsync(ct);
+
+            logger.LogError(
+                "Falha ao configurar webhook. Provider=evolution Instance={Instance} Status={Status} Body={Body}",
+                instanceName, (int)response.StatusCode, Truncate(body));
+
+            return false;
+        }
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
+        {
+            logger.LogError(ex, "Evolution indisponivel ao configurar webhook. Instance={Instance}", instanceName);
+            return false;
+        }
+    }
+
     private async Task<SendMessageResult> PostAsync(string path, object payload, CancellationToken ct)
     {
         try

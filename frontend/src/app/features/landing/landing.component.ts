@@ -22,6 +22,9 @@ const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent
             <a href="#produto">O que você recebe</a>
           </nav>
           <a routerLink="/entrar" class="mk-btn mk-btn--ghost-dark">Entrar</a>
+          <a [href]="whatsappUrl" target="_blank" rel="noopener" class="mk-btn mk-btn--brass mk-btn--nav">
+            Fazer orçamento
+          </a>
         </div>
       </header>
 
@@ -77,6 +80,38 @@ const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent
         <p [appScrollReveal]="0" class="mk-reveal">
           Todo corretor sabe: o cliente que espera resposta é o cliente que fecha com outro.
         </p>
+      </section>
+
+      <!-- vitrine do produto -->
+      <section class="mk-showcase">
+        <div [appScrollReveal]="0" class="mk-showcase__frame mk-reveal">
+          <div class="mk-browser">
+            <span class="mk-browser__dot"></span>
+            <span class="mk-browser__dot"></span>
+            <span class="mk-browser__dot"></span>
+            <span class="mk-browser__url">app.imoboo.com.br/painel</span>
+          </div>
+          <div class="mk-dash">
+            <div class="mk-dash__attention">
+              <span class="mk-dash__big">3</span>
+              <span>conversas esperando você</span>
+              <span class="mk-dash__aside">12 sendo conduzidas pela IA</span>
+            </div>
+            <div class="mk-dash__stats">
+              <div class="mk-dash__stat"><span>Leads novos</span><strong>8</strong></div>
+              <div class="mk-dash__stat"><span>Em atendimento</span><strong>14</strong></div>
+              <div class="mk-dash__stat"><span>Leads quentes</span><strong>5</strong></div>
+              <div class="mk-dash__stat"><span>Imóveis disponíveis</span><strong>42</strong></div>
+            </div>
+            <div class="mk-dash__funnel">
+              <div class="mk-dash__bar" style="width: 92%">Novo</div>
+              <div class="mk-dash__bar" style="width: 68%">Em atendimento</div>
+              <div class="mk-dash__bar" style="width: 40%">Visita agendada</div>
+              <div class="mk-dash__bar" style="width: 18%">Fechado</div>
+            </div>
+          </div>
+        </div>
+        <p class="mk-showcase__caption">O painel real do Imoboo — o número que importa, sempre na frente.</p>
       </section>
 
       <!-- como funciona -->
@@ -186,9 +221,34 @@ const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent
         </a>
       </section>
 
-      <footer class="mk-footer">
-        <span class="mk-wordmark mk-wordmark--small">Imoboo</span>
-        <span>CRM para corretores autônomos.</span>
+      <footer class="mk-footer-full">
+        <div class="mk-footer-full__inner">
+          <div class="mk-footer-full__brand">
+            <span class="mk-wordmark">Imoboo</span>
+            <p>O app do corretor de imóveis.</p>
+          </div>
+
+          <div class="mk-footer-full__col">
+            <h3>Sobre o app</h3>
+            <ul>
+              <li><a routerLink="/">Imoboo</a></li>
+              <li><a [href]="whatsappUrl" target="_blank" rel="noopener">Fazer meu orçamento</a></li>
+              <li><a href="mailto:davissonfalcaosjr@gmail.com">Contato</a></li>
+            </ul>
+          </div>
+
+          <div class="mk-footer-full__col">
+            <h3>Ajuda</h3>
+            <ul>
+              <li><a href="#como-funciona">Tutoriais</a></li>
+              <li><a [href]="whatsappUrl" target="_blank" rel="noopener">Suporte</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="mk-footer-full__bottom">
+          <span>© {{ currentYear }} Imoboo.</span>
+        </div>
       </footer>
 
       <!-- botao flutuante -->
@@ -273,7 +333,8 @@ const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent
       position: relative; max-width: 1180px; margin: 0 auto;
       display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 64px; align-items: center;
     }
-    .mk-h1 { color: var(--mk-paper); font-size: 44px; line-height: 1.16; margin: 0 0 24px; }
+    .mk-h1 { color: var(--mk-paper); font-size: 52px; line-height: 1.13; margin: 0 0 24px; }
+    .mk-btn--nav { padding: 10px 18px; font-size: 14px; }
     .mk-lede { color: var(--mk-ink-soft); font-size: 17px; line-height: 1.6; max-width: 46ch; margin: 0 0 32px; }
     .mk-hero__actions { display: flex; gap: 14px; flex-wrap: wrap; }
 
@@ -300,6 +361,11 @@ const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent
       max-width: 84%; padding: 10px 13px; border-radius: 12px; font-size: 13.5px; line-height: 1.45;
       opacity: 0; transform: translateY(6px); animation: mk-rise 0.5s ease forwards;
     }
+    /* Se a animação estiver desligada (movimento reduzido, ou qualquer outro motivo),
+       o conteúdo nunca pode ficar invisível — a animação é só um enfeite opcional. */
+    @media (prefers-reduced-motion: reduce) {
+      .mk-bubble, .mk-phone__tag { opacity: 1 !important; transform: none !important; animation: none !important; }
+    }
     .mk-bubble--in { align-self: flex-start; background: #1E222B; color: var(--mk-paper); border-bottom-left-radius: 3px; }
     .mk-bubble--out { align-self: flex-end; background: var(--mk-brass); color: #1A1305; border-bottom-right-radius: 3px; font-weight: 500; }
     .mk-bubble--typing {
@@ -313,11 +379,11 @@ const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent
     .mk-bubble--typing span:nth-child(3) { animation-delay: 0.3s; }
 
     .mk-anim-1 { animation-delay: 0.1s; }
-    .mk-anim-2 { animation-delay: 0.9s; }
-    .mk-anim-3 { animation-delay: 1.9s; }
+    .mk-anim-2 { animation-delay: 0.55s; }
+    .mk-anim-3 { animation-delay: 1.1s; }
     .mk-phone__tag {
       align-self: flex-end; font-size: 11px; color: var(--mk-forest); font-weight: 600;
-      opacity: 0; animation: mk-rise 0.5s ease forwards; animation-delay: 2.5s;
+      opacity: 0; animation: mk-rise 0.5s ease forwards; animation-delay: 1.5s;
     }
 
     @keyframes mk-rise { to { opacity: 1; transform: translateY(0); } }
@@ -330,6 +396,47 @@ const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent
       font-size: 24px; line-height: 1.4; color: var(--mk-paper); border-left: 3px solid var(--mk-brass);
       padding-left: 24px;
     }
+
+    /* --- vitrine do produto --- */
+    .mk-showcase { background: var(--mk-ink); padding: 0 32px 110px; text-align: center; }
+    .mk-showcase__frame {
+      max-width: 900px; margin: 0 auto; border-radius: 14px; overflow: hidden;
+      background: var(--mk-cream); box-shadow: 0 50px 90px -30px rgba(0,0,0,0.55);
+      border: 1px solid var(--mk-line-dark);
+    }
+    .mk-browser {
+      display: flex; align-items: center; gap: 7px; padding: 12px 16px; background: #1E222B;
+    }
+    .mk-browser__dot { width: 9px; height: 9px; border-radius: 50%; background: #3A404C; }
+    .mk-browser__url {
+      margin-left: 12px; font-size: 12px; color: var(--mk-ink-soft); font-family: var(--font-code);
+    }
+
+    .mk-dash { padding: 28px; text-align: left; }
+    .mk-dash__attention {
+      display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap;
+      padding: 20px 22px; margin-bottom: 20px; border-radius: 10px;
+      background: #FBF3E4; border-left: 4px solid var(--mk-brass);
+    }
+    .mk-dash__big { font-family: var(--font-serif); font-size: 44px; font-weight: 600; color: var(--mk-brass); line-height: 1; }
+    .mk-dash__attention span:not(.mk-dash__big) { font-size: 15px; font-weight: 500; color: var(--mk-text); }
+    .mk-dash__aside { margin-left: auto !important; font-size: 13px !important; font-weight: 400 !important; color: var(--mk-text-soft) !important; }
+
+    .mk-dash__stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+    .mk-dash__stat {
+      background: #fff; border: 1px solid var(--mk-line-light); border-radius: 8px; padding: 14px;
+      display: flex; flex-direction: column; gap: 4px;
+    }
+    .mk-dash__stat span { font-size: 12px; color: var(--mk-text-soft); }
+    .mk-dash__stat strong { font-size: 22px; font-weight: 600; }
+
+    .mk-dash__funnel { display: flex; flex-direction: column; gap: 8px; }
+    .mk-dash__bar {
+      background: var(--mk-forest); color: #fff; font-size: 12px; font-weight: 500;
+      padding: 8px 12px; border-radius: 4px;
+    }
+
+    .mk-showcase__caption { margin: 20px 0 0; color: var(--mk-ink-soft); font-size: 14px; }
 
     /* --- sections --- */
     .mk-section--light { background: var(--mk-paper); padding: 88px 32px; }
@@ -390,9 +497,19 @@ const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent
     .mk-cta .mk-h2 { max-width: none; margin: 0 auto 32px; }
 
     /* --- footer --- */
-    .mk-footer {
-      background: var(--mk-paper); padding: 28px 32px; display: flex; gap: 12px; align-items: baseline;
-      color: var(--mk-text-soft); font-size: 13px; max-width: 1180px; margin: 0 auto;
+    .mk-footer-full { background: var(--mk-cream); border-top: 1px solid var(--mk-line-light); }
+    .mk-footer-full__inner {
+      max-width: 1180px; margin: 0 auto; padding: 56px 32px 40px;
+      display: grid; grid-template-columns: 1.6fr 1fr 1fr; gap: 40px;
+    }
+    .mk-footer-full__brand p { margin: 10px 0 0; color: var(--mk-text-soft); font-size: 14px; max-width: 32ch; }
+    .mk-footer-full__col h3 { margin: 0 0 14px; font-size: 13px; font-weight: 600; color: var(--mk-text-soft); }
+    .mk-footer-full__col ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+    .mk-footer-full__col a { color: var(--mk-text); font-size: 14px; text-decoration: none; }
+    .mk-footer-full__col a:hover { color: var(--mk-brass); text-decoration: none; }
+    .mk-footer-full__bottom {
+      max-width: 1180px; margin: 0 auto; padding: 20px 32px; border-top: 1px solid var(--mk-line-light);
+      color: var(--mk-text-soft); font-size: 12.5px;
     }
 
     /* --- botao flutuante --- */
@@ -414,6 +531,9 @@ const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent
       .mk-steps { grid-template-columns: 1fr 1fr; }
       .mk-feature, .mk-feature--reverse .mk-feature__text { grid-template-columns: 1fr; order: initial; }
       .mk-feature { grid-template-columns: 1fr; }
+      .mk-dash__stats { grid-template-columns: 1fr 1fr; }
+      .mk-btn--nav { display: none; }
+      .mk-footer-full__inner { grid-template-columns: 1fr; gap: 28px; }
     }
     @media (max-width: 560px) {
       .mk-steps { grid-template-columns: 1fr; }
@@ -427,6 +547,7 @@ export class LandingComponent implements OnInit {
   private readonly router = inject(Router);
 
   readonly whatsappUrl = WHATSAPP_URL;
+  readonly currentYear = new Date().getFullYear();
 
   ngOnInit(): void {
     // Quem já está logado não precisa ver a landing de novo.

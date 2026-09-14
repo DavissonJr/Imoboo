@@ -16,6 +16,13 @@ public interface IWhatsAppService
     /// checa IsInstanceConnectedAsync antes de chegar aqui).
     /// </summary>
     Task<QrCodeResult> GetQrCodeAsync(string instanceName, CancellationToken ct = default);
+
+    /// <summary>
+    /// Diz à Evolution para onde mandar as mensagens que chegam. Sem isso, a
+    /// instância existe e conecta normalmente, mas nunca avisa o sistema —
+    /// o corretor recebe no celular e o CRM nunca fica sabendo.
+    /// </summary>
+    Task<bool> SetWebhookAsync(string instanceName, string webhookUrl, CancellationToken ct = default);
 }
 
 public sealed record SendTextRequest(string InstanceName, string ToPhone, string Text);

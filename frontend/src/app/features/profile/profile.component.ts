@@ -226,7 +226,7 @@ export class ProfileComponent implements OnInit {
           return;
         }
 
-        this.qrImage.set(result.base64Image ? `data:image/png;base64,${result.base64Image}` : null);
+        this.qrImage.set(result.base64Image ? this.toDataUri(result.base64Image) : null);
         if (!result.base64Image) this.qrError.set(result.error ?? "Não foi possível gerar o QR code agora.");
       },
       error: () => {
@@ -234,5 +234,10 @@ export class ProfileComponent implements OnInit {
         this.qrError.set("Configure o nome da instância antes de conectar.");
       },
     });
+  }
+
+  /** A Evolution às vezes já manda o base64 com o prefixo "data:image/..." embutido. */
+  private toDataUri(base64: string): string {
+    return base64.startsWith("data:") ? base64 : `data:image/png;base64,${base64}`;
   }
 }

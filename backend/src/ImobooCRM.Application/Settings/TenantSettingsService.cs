@@ -15,6 +15,7 @@ public interface ITenantSettingsService
 public sealed class TenantSettingsService(
     IAppDbContext db,
     IWhatsAppService whatsApp,
+    IPublicLinkBuilder linkBuilder,
     ITenantContext tenant,
     IDateTimeProvider clock) : ITenantSettingsService
 {
@@ -48,7 +49,13 @@ public sealed class TenantSettingsService(
             : request.EvolutionInstanceName.Trim();
         settings.UpdatedAtUtc = clock.UtcNow;
 
+        EnsureWebhookToken(settings);
         await db.SaveChangesAsync(ct);
+
+        // Toda vez que a instância é (re)configurada, garante que a Evolution sabe
+        // pra onde mandar as mensagens. Idempotente e barato — sem risco chamar sempre.
+        if (!string.IsNullOrWhiteSpace(settings.EvolutionInstanceName))
+            await whatsApp.SetWebhookAsync(settings.EvolutionInstanceName, linkBuilder.WebhookUrl(settings.WebhookToken!), ct);
     }
 
     public async Task<WhatsAppQrCodeDto> GetWhatsAppQrCodeAsync(CancellationToken ct = default)
@@ -57,6 +64,13 @@ public sealed class TenantSettingsService(
 
         if (string.IsNullOrWhiteSpace(settings.EvolutionInstanceName))
             throw new ValidationAppException("Configure o nome da instância da Evolution antes de conectar.");
+
+        EnsureWebhookToken(settings);
+        await db.SaveChangesAsync(ct);
+
+        // Reconfirma o webhook aqui também — cobre o caso de uma instância que já
+        // estava conectada antes dessa etapa existir no sistema.
+        await whatsApp.SetWebhookAsync(settings.EvolutionInstanceName, linkBuilder.WebhookUrl(settings.WebhookToken!), ct);
 
         var alreadyConnected = await whatsApp.IsInstanceConnectedAsync(settings.EvolutionInstanceName, ct);
         if (alreadyConnected)
@@ -68,6 +82,13 @@ public sealed class TenantSettingsService(
 
         var result = await whatsApp.GetQrCodeAsync(settings.EvolutionInstanceName, ct);
         return new WhatsAppQrCodeDto(result.Base64, AlreadyConnected: false, result.Error);
+    }
+
+    /// <summary>Contas antigas (ou criadas antes desta etapa existir) podem não ter token ainda.</summary>
+    private static void EnsureWebhookToken(TenantSettings settings)
+    {
+        if (string.IsNullOrWhiteSpace(settings.WebhookToken))
+            settings.WebhookToken = Guid.NewGuid().ToString("N");
     }
 
     private async Task<TenantSettings> Load(CancellationToken ct) =>
