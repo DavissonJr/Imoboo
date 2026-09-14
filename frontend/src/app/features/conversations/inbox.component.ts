@@ -283,6 +283,7 @@ export class InboxComponent implements OnInit, OnDestroy {
   stateLabel(c: ConversationListItem): string {
     if (c.status === ConversationStatus.Encerrada) return "Encerrada";
     if (c.mode === ConversationMode.Humana) return "Com você";
+    if (c.mode === ConversationMode.Menu) return "Menu automático";
     return "IA respondendo";
   }
 
@@ -290,6 +291,7 @@ export class InboxComponent implements OnInit, OnDestroy {
     if (c.status === ConversationStatus.Encerrada) return "state-tag--closed";
     if (c.status === ConversationStatus.AguardandoCorretor) return "state-tag--wait";
     if (c.mode === ConversationMode.Humana) return "state-tag--human";
+    if (c.mode === ConversationMode.Menu) return "state-tag--closed";
     return "state-tag--auto";
   }
 

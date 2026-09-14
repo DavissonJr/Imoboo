@@ -11,11 +11,11 @@ public interface IWhatsAppService
     Task<bool> IsInstanceConnectedAsync(string instanceName, CancellationToken ct = default);
 
     /// <summary>
-    /// Pede à Evolution o QR code para parear o número. Retorna null se a instância
-    /// já estiver conectada ou se o provedor não respondeu — quem chama decide como
-    /// tratar cada caso (a Application checa IsInstanceConnectedAsync antes).
+    /// Pede à Evolution o QR code para parear o número. O resultado sempre vem com
+    /// motivo do erro quando falha — quem chama decide como exibir (a Application
+    /// checa IsInstanceConnectedAsync antes de chegar aqui).
     /// </summary>
-    Task<string?> GetQrCodeAsync(string instanceName, CancellationToken ct = default);
+    Task<QrCodeResult> GetQrCodeAsync(string instanceName, CancellationToken ct = default);
 }
 
 public sealed record SendTextRequest(string InstanceName, string ToPhone, string Text);
@@ -31,4 +31,11 @@ public sealed record SendMessageResult(bool Success, string? ExternalMessageId, 
 {
     public static SendMessageResult Ok(string? id) => new(true, id, null);
     public static SendMessageResult Fail(string error) => new(false, null, error);
+}
+
+/// <summary>Motivo do erro vai até a tela do admin — sem isso, a única pista fica presa no log do container.</summary>
+public sealed record QrCodeResult(string? Base64, string? Error)
+{
+    public static QrCodeResult Ok(string base64) => new(base64, null);
+    public static QrCodeResult Fail(string error) => new(null, error);
 }

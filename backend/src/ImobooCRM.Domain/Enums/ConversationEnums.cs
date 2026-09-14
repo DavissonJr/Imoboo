@@ -2,11 +2,13 @@ namespace ImobooCRM.Domain.Enums;
 
 /// <summary>
 /// Quem esta conduzindo a conversa neste momento.
+/// Menu        -> bot determinístico (sem IA), estado inicial de toda conversa nova.
 /// Automatica  -> IA responde.
 /// Humana      -> IA silenciada, corretor assumiu.
 /// </summary>
 public enum ConversationMode
 {
+    Menu = 3,
     Automatica = 1,
     Humana = 2
 }

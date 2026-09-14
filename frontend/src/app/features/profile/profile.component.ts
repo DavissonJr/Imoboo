@@ -227,7 +227,7 @@ export class ProfileComponent implements OnInit {
         }
 
         this.qrImage.set(result.base64Image ? `data:image/png;base64,${result.base64Image}` : null);
-        if (!result.base64Image) this.qrError.set("Não foi possível gerar o QR code agora.");
+        if (!result.base64Image) this.qrError.set(result.error ?? "Não foi possível gerar o QR code agora.");
       },
       error: () => {
         this.qrLoading.set(false);

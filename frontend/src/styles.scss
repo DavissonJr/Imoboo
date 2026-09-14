@@ -60,6 +60,7 @@ html, body {
   font-size: 15px;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+  scroll-behavior: smooth;
 }
 
 h1, h2, h3, h4 { margin: 0; font-weight: 600; line-height: 1.25; }
@@ -175,4 +176,5 @@ tbody tr:last-child td { border-bottom: none; }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
+  html { scroll-behavior: auto; }
 }

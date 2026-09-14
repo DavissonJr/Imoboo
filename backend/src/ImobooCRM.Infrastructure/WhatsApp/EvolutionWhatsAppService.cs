@@ -1,3 +1,4 @@
+using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json.Serialization;
 using ImobooCRM.Application.Abstractions;
@@ -62,26 +63,89 @@ public sealed class EvolutionWhatsAppService(
         }
     }
 
-    public async Task<string?> GetQrCodeAsync(string instanceName, CancellationToken ct = default)
+    public async Task<QrCodeResult> GetQrCodeAsync(string instanceName, CancellationToken ct = default)
+    {
+        var (result, notFound) = await ConnectAsync(instanceName, ct);
+        if (result.Base64 is not null || !notFound) return result;
+
+        // Instancia ainda nao existe na Evolution: cria e tenta pegar o QR de novo,
+        // uma unica vez. O corretor nunca precisa saber que essa etapa existe.
+        logger.LogInformation("Instancia inexistente, criando. Instance={Instance}", instanceName);
+
+        var createError = await CreateInstanceAsync(instanceName, ct);
+        return createError is not null
+            ? QrCodeResult.Fail(createError)
+            : (await ConnectAsync(instanceName, ct)).Result;
+    }
+
+    private async Task<(QrCodeResult Result, bool NotFound)> ConnectAsync(string instanceName, CancellationToken ct)
     {
         try
         {
             var response = await http.GetAsync($"/instance/connect/{instanceName}", ct);
+
+            if (response.StatusCode == HttpStatusCode.NotFound)
+                return (QrCodeResult.Fail("instancia_nao_encontrada"), true);
+
             if (!response.IsSuccessStatusCode)
             {
+                var status = (int)response.StatusCode;
+
                 logger.LogWarning(
                     "Falha ao obter QR code. Provider=evolution Instance={Instance} Status={Status}",
-                    instanceName, (int)response.StatusCode);
-                return null;
+                    instanceName, status);
+
+                return (QrCodeResult.Fail($"A Evolution respondeu com erro (HTTP {status}) ao pedir o QR code."), false);
             }
 
             var result = await response.Content.ReadFromJsonAsync<QrCodeResponse>(ct);
-            return result?.Base64;
+
+            if (string.IsNullOrWhiteSpace(result?.Base64))
+            {
+                logger.LogWarning("Evolution respondeu sem QR code. Instance={Instance}", instanceName);
+                return (QrCodeResult.Fail(
+                    "A Evolution respondeu, mas sem o QR code. A instância pode já estar pareada ou nesse momento indisponível — tente de novo em instantes."), false);
+            }
+
+            return (QrCodeResult.Ok(result.Base64), false);
+        }
+        catch (TaskCanceledException) when (!ct.IsCancellationRequested)
+        {
+            logger.LogError("Timeout ao pedir QR code. Instance={Instance}", instanceName);
+            return (QrCodeResult.Fail("A Evolution não respondeu a tempo (timeout). Verifique se ela está no ar."), false);
+        }
+        catch (HttpRequestException ex)
+        {
+            logger.LogError(ex, "Evolution indisponivel ao pedir QR code. Instance={Instance}", instanceName);
+            return (QrCodeResult.Fail(
+                "Não foi possível conectar à Evolution API. Confira o endereço configurado (Evolution:BaseUrl) " +
+                "e se o serviço está no ar e acessível a partir do container da API."), false);
+        }
+    }
+
+    /// <summary>Devolve null em sucesso, ou a mensagem de erro para mostrar ao admin.</summary>
+    private async Task<string?> CreateInstanceAsync(string instanceName, CancellationToken ct)
+    {
+        try
+        {
+            var payload = new { instanceName, qrcode = true, integration = "WHATSAPP-BAILEYS" };
+            var response = await http.PostAsJsonAsync("/instance/create", payload, ct);
+
+            if (response.IsSuccessStatusCode) return null;
+
+            var body = await response.Content.ReadAsStringAsync(ct);
+
+            logger.LogError(
+                "Falha ao criar instancia. Provider=evolution Instance={Instance} Status={Status} Body={Body}",
+                instanceName, (int)response.StatusCode, Truncate(body));
+
+            return $"A Evolution recusou criar a instância \"{instanceName}\" (HTTP {(int)response.StatusCode}). " +
+                   "Confira se esse nome já está em uso com outra configuração.";
         }
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
         {
-            logger.LogWarning(ex, "Evolution indisponivel ao pedir QR code. Instance={Instance}", instanceName);
-            return null;
+            logger.LogError(ex, "Evolution indisponivel ao criar instancia. Instance={Instance}", instanceName);
+            return "Não foi possível conectar à Evolution API para criar a instância.";
         }
     }
 

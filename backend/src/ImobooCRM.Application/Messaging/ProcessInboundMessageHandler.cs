@@ -27,6 +27,7 @@ public sealed class ProcessInboundMessageHandler(
     ILeadPreferenceExtractor extractor,
     IPropertySearchService catalog,
     IWhatsAppService whatsApp,
+    IPublicLinkBuilder linkBuilder,
     IDateTimeProvider clock,
     ILogger<ProcessInboundMessageHandler> logger) : IProcessInboundMessageHandler
 {
@@ -35,6 +36,18 @@ public sealed class ProcessInboundMessageHandler(
     private const int MaxPropertiesInContext = 5;
     private static readonly TimeSpan ReplyCacheTtl = TimeSpan.FromHours(6);
     private static readonly TimeSpan LockTtl = TimeSpan.FromSeconds(60);
+
+    private const string WelcomeMenuText =
+        "Olá! 👋 Que bom falar com você.\n\n" +
+        "1 - Ver imóveis disponíveis\n" +
+        "2 - Falar com um atendente\n\n" +
+        "Responda com o número da opção.";
+
+    private const string RepromptMenuText =
+        "Não entendi 🙂 Escolha uma das opções:\n\n" +
+        "1 - Ver imóveis disponíveis\n" +
+        "2 - Falar com um atendente\n\n" +
+        "Responda com o número da opção.";
 
     public async Task HandleAsync(InboundMessage inbound, CancellationToken ct = default)
     {
@@ -77,6 +90,22 @@ public sealed class ProcessInboundMessageHandler(
 
         StoreInbound(conversation, inbound);
         lead.RegisterContact(clock.UtcNow);
+
+        // Toda conversa nasce em modo Menu: nenhuma chamada de IA acontece até o
+        // lead pedir explicitamente para falar com um atendente.
+        if (conversation.Mode == ConversationMode.Menu)
+        {
+            var continueToAi = await HandleMenuAsync(settings, conversation, lead, inbound, ct);
+
+            if (!continueToAi)
+            {
+                await db.SaveChangesAsync(ct);
+                await cache.RemoveAsync(CacheKeys.DashboardSummary(tenant.TenantId), ct);
+                return;
+            }
+            // continueToAi == true: o lead escolheu falar com atendente, o modo já
+            // virou Automatica — segue direto para o fluxo normal de IA abaixo.
+        }
 
         var decision = await DecideAsync(settings, conversation, lead, inbound, ct);
 
@@ -144,6 +173,104 @@ public sealed class ProcessInboundMessageHandler(
             : [];
 
         return Decision.Reply(properties);
+    }
+
+    // ---------------------------------------------------------------- menu (sem IA)
+
+    /// <summary>
+    /// Retorna true quando o lead escolheu falar com um atendente — nesse caso a conversa
+    /// já foi promovida para Automatica e quem chamou deve seguir para o fluxo normal de IA
+    /// na mesma requisição, para a primeira resposta não ficar um "ok" vazio.
+    /// </summary>
+    private async Task<bool> HandleMenuAsync(
+        TenantSettings settings, Conversation conversation, Lead lead, InboundMessage inbound, CancellationToken ct)
+    {
+        var alreadySentSomething = await db.Messages.AnyAsync(
+            m => m.ConversationId == conversation.Id && m.Direction == MessageDirection.Outbound, ct);
+
+        if (!alreadySentSomething)
+        {
+            await SendSystemMessageAsync(settings, conversation, lead, WelcomeMenuText, ct);
+            return false;
+        }
+
+        var option = MenuOption.Parse(inbound.Text);
+
+        switch (option)
+        {
+            case 1:
+                await SendCatalogLinkAsync(settings, conversation, lead, ct);
+                return false;
+
+            case 2:
+                conversation.Mode = ConversationMode.Automatica;
+                return true;
+
+            default:
+                await SendSystemMessageAsync(settings, conversation, lead, RepromptMenuText, ct);
+                return false;
+        }
+    }
+
+    private async Task SendCatalogLinkAsync(
+        TenantSettings settings, Conversation conversation, Lead lead, CancellationToken ct)
+    {
+        var slug = await db.Tenants
+            .Where(t => t.Id == tenant.TenantId)
+            .Select(t => t.Slug)
+            .FirstOrDefaultAsync(ct);
+
+        var text = string.IsNullOrWhiteSpace(slug)
+            ? "No momento não consegui gerar o link do catálogo. Digite 2 para falar com um atendente."
+            : $"Aqui está: {linkBuilder.CatalogUrl(slug)}\n\n" +
+              "Dá pra filtrar por bairro, preço e quantidade de quartos. " +
+              "Se quiser, digite 2 a qualquer momento para falar com um atendente.";
+
+        await SendSystemMessageAsync(settings, conversation, lead, text, ct);
+    }
+
+    /// <summary>
+    /// Envia e persiste uma mensagem determinística (não gerada por IA) — mesmo
+    /// esqueleto de envio que a resposta de IA usa, mas Author=Sistema, para o
+    /// corretor e o dashboard distinguirem uma coisa da outra.
+    /// </summary>
+    private async Task SendSystemMessageAsync(
+        TenantSettings settings, Conversation conversation, Lead lead, string text, CancellationToken ct)
+    {
+        var outbound = new Message
+        {
+            TenantId = tenant.TenantId,
+            ConversationId = conversation.Id,
+            Direction = MessageDirection.Outbound,
+            Author = MessageAuthor.Sistema,
+            Content = text,
+            SentAtUtc = clock.UtcNow,
+            DeliveryStatus = MessageDeliveryStatus.Pendente
+        };
+
+        db.Messages.Add(outbound);
+
+        var send = await whatsApp.SendTextAsync(
+            new SendTextRequest(settings.EvolutionInstanceName ?? string.Empty, lead.Phone, text), ct);
+
+        if (send.Success)
+        {
+            outbound.DeliveryStatus = MessageDeliveryStatus.Enviada;
+            outbound.ExternalMessageId = send.ExternalMessageId;
+            conversation.Status = ConversationStatus.AguardandoCliente;
+        }
+        else
+        {
+            outbound.DeliveryStatus = MessageDeliveryStatus.Falhou;
+            outbound.FailureReason = send.Error;
+
+            logger.LogError(
+                "Falha no envio do menu. ConversationId={ConversationId} Provider=evolution Error={Error}",
+                conversation.Id, send.Error);
+        }
+
+        conversation.LastMessageAtUtc = clock.UtcNow;
+        conversation.LastMessagePreview = Preview(text);
     }
 
     // ---------------------------------------------------------------- resposta
@@ -317,7 +444,7 @@ public sealed class ProcessInboundMessageHandler(
             LeadId = lead.Id,
             Lead = lead,
             ExternalChatId = inbound.FromPhone,
-            Mode = ConversationMode.Automatica,
+            Mode = ConversationMode.Menu,
             Status = ConversationStatus.AguardandoCliente
         };
 

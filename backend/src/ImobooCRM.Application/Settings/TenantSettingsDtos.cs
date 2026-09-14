@@ -10,4 +10,4 @@ public sealed record TenantSettingsDto(
 
 public sealed record UpdateTenantSettingsRequest(string? AiPersona, string? EvolutionInstanceName);
 
-public sealed record WhatsAppQrCodeDto(string? Base64Image, bool AlreadyConnected);
+public sealed record WhatsAppQrCodeDto(string? Base64Image, bool AlreadyConnected, string? Error);

@@ -283,6 +283,7 @@ export interface UpdateTenantSettingsRequest {
 export interface WhatsAppQrCode {
   base64Image: string | null;
   alreadyConnected: boolean;
+  error: string | null;
 }
 
 /** Uma conta = um tenant inteiro (corretor autônomo), não um usuário do mesmo tenant. */
@@ -312,4 +313,9 @@ export interface CreatedAccount {
   ownerUserId: string;
   ownerEmail: string;
   initialPassword: string;
+}
+
+export interface PublicCatalogResponse {
+  tenantName: string;
+  properties: PagedResult<PropertyListItem>;
 }

@@ -16,7 +16,7 @@ export enum LeadTemperature { Frio = 1, Morno = 2, Quente = 3 }
 
 export enum LeadSource { WhatsApp = 1, Site = 2, Portal = 3, Indicacao = 4, Manual = 5, Outro = 99 }
 
-export enum ConversationMode { Automatica = 1, Humana = 2 }
+export enum ConversationMode { Automatica = 1, Humana = 2, Menu = 3 }
 
 export enum ConversationStatus { AguardandoCliente = 1, AguardandoCorretor = 2, Encerrada = 3 }
 

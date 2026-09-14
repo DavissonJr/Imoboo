@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using ImobooCRM.Application.Common;
 using ImobooCRM.Domain.Enums;
 
 namespace ImobooCRM.Application.Ai;
@@ -29,7 +30,7 @@ public static partial class HandoffDetector
     {
         if (string.IsNullOrWhiteSpace(message)) return HandoffReason.Nenhum;
 
-        var normalized = RemoveDiacritics(message.ToLowerInvariant());
+        var normalized = TextNormalization.RemoveDiacritics(message.ToLowerInvariant());
 
         foreach (var (terms, reason) in Triggers)
             if (terms.Any(normalized.Contains))
@@ -56,14 +57,5 @@ public static partial class HandoffDetector
         };
 
         return (HandoffTag().Replace(reply, string.Empty).Trim(), reason);
-    }
-
-    private static string RemoveDiacritics(string text)
-    {
-        var normalized = text.Normalize(System.Text.NormalizationForm.FormD);
-        return string.Concat(normalized.Where(c =>
-            System.Globalization.CharUnicodeInfo.GetUnicodeCategory(c)
-                != System.Globalization.UnicodeCategory.NonSpacingMark))
-            .Normalize(System.Text.NormalizationForm.FormC);
     }
 }

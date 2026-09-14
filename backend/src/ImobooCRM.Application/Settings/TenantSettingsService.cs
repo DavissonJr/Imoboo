@@ -63,11 +63,11 @@ public sealed class TenantSettingsService(
         {
             settings.WhatsAppConnected = true;
             await db.SaveChangesAsync(ct);
-            return new WhatsAppQrCodeDto(null, AlreadyConnected: true);
+            return new WhatsAppQrCodeDto(null, AlreadyConnected: true, Error: null);
         }
 
-        var base64 = await whatsApp.GetQrCodeAsync(settings.EvolutionInstanceName, ct);
-        return new WhatsAppQrCodeDto(base64, AlreadyConnected: false);
+        var result = await whatsApp.GetQrCodeAsync(settings.EvolutionInstanceName, ct);
+        return new WhatsAppQrCodeDto(result.Base64, AlreadyConnected: false, result.Error);
     }
 
     private async Task<TenantSettings> Load(CancellationToken ct) =>

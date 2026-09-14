@@ -1,11 +1,16 @@
 import { Component, OnInit, inject } from "@angular/core";
 import { Router, RouterLink } from "@angular/router";
 import { AuthService } from "../../core/services/auth.service";
+import { ScrollRevealDirective } from "../../shared/directives/scroll-reveal.directive";
+
+const WHATSAPP_NUMBER = "5581996533458";
+const WHATSAPP_MESSAGE = "Olá! Vi o Imoboo e quero saber mais sobre o sistema.";
+const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(WHATSAPP_MESSAGE)}`;
 
 @Component({
   selector: "app-landing",
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, ScrollRevealDirective],
   template: `
     <div class="mk">
       <!-- nav -->
@@ -22,6 +27,7 @@ import { AuthService } from "../../core/services/auth.service";
 
       <!-- hero -->
       <section class="mk-hero">
+        <div class="mk-hero__glow" aria-hidden="true"></div>
         <div class="mk-hero__grid">
           <div class="mk-hero__copy">
             <h1 class="mk-h1">
@@ -35,7 +41,9 @@ import { AuthService } from "../../core/services/auth.service";
               invenção — e só te chama quando o cliente precisa mesmo de você.
             </p>
             <div class="mk-hero__actions">
-              <a routerLink="/entrar" class="mk-btn mk-btn--brass">Começar agora</a>
+              <a [href]="whatsappUrl" target="_blank" rel="noopener" class="mk-btn mk-btn--brass">
+                Fazer seu orçamento
+              </a>
               <a href="#como-funciona" class="mk-btn mk-btn--ghost">Ver como funciona</a>
             </div>
           </div>
@@ -66,41 +74,43 @@ import { AuthService } from "../../core/services/auth.service";
 
       <!-- linha de transicao -->
       <section class="mk-bridge">
-        <p>Todo corretor sabe: o cliente que espera resposta é o cliente que fecha com outro.</p>
+        <p [appScrollReveal]="0" class="mk-reveal">
+          Todo corretor sabe: o cliente que espera resposta é o cliente que fecha com outro.
+        </p>
       </section>
 
       <!-- como funciona -->
       <section class="mk-section mk-section--light" id="como-funciona">
         <div class="mk-section__inner">
-          <h2 class="mk-h2">Como funciona, do jeito que acontece de verdade</h2>
+          <h2 [appScrollReveal]="0" class="mk-h2 mk-reveal">Como funciona, do jeito que acontece de verdade</h2>
 
           <ol class="mk-steps">
-            <li>
+            <li [appScrollReveal]="0" class="mk-reveal">
               <span class="mk-steps__n">1</span>
               <div>
                 <h3>A mensagem chega</h3>
                 <p>Pelo número que você já usa no WhatsApp, via Evolution API.</p>
               </div>
             </li>
-            <li>
+            <li [appScrollReveal]="80" class="mk-reveal">
               <span class="mk-steps__n">2</span>
               <div>
-                <h3>A IA consulta o seu catálogo</h3>
-                <p>Preço, bairro, quartos, financiamento — sempre do que está cadastrado, nunca inventado.</p>
+                <h3>Um menu rápido, sem IA</h3>
+                <p>Catálogo ou falar com atendente — a escolha simples não gasta token nenhum.</p>
               </div>
             </li>
-            <li>
+            <li [appScrollReveal]="160" class="mk-reveal">
               <span class="mk-steps__n">3</span>
               <div>
-                <h3>Responde na hora</h3>
-                <p>Em segundos, com os imóveis que realmente combinam com o que o cliente pediu.</p>
+                <h3>A IA entra quando faz sentido</h3>
+                <p>Só quando o cliente pede — aí sim consulta o catálogo e responde de verdade.</p>
               </div>
             </li>
-            <li>
+            <li [appScrollReveal]="240" class="mk-reveal">
               <span class="mk-steps__n">4</span>
               <div>
                 <h3>Você assume quando quiser</h3>
-                <p>Negociação, documentação ou um pedido direto de falar com alguém: a conversa vem pra você.</p>
+                <p>Negociação, documentação ou um pedido direto: a conversa vem pra você.</p>
               </div>
             </li>
           </ol>
@@ -110,7 +120,7 @@ import { AuthService } from "../../core/services/auth.service";
       <!-- features -->
       <section class="mk-section mk-section--light" id="produto">
         <div class="mk-section__inner">
-          <div class="mk-feature">
+          <div [appScrollReveal]="0" class="mk-feature mk-reveal">
             <div class="mk-feature__text">
               <h2 class="mk-h2">Um catálogo que a IA realmente usa</h2>
               <p>Cadastre o imóvel uma vez — código, preço, bairro, características, fotos.
@@ -126,11 +136,12 @@ import { AuthService } from "../../core/services/auth.service";
             </div>
           </div>
 
-          <div class="mk-feature mk-feature--reverse">
+          <div [appScrollReveal]="0" class="mk-feature mk-feature--reverse mk-reveal">
             <div class="mk-feature__text">
-              <h2 class="mk-h2">Um painel que mostra o que importa</h2>
-              <p>Não é uma tela cheia de gráfico. É um número, grande, sozinho: quantas
-                conversas estão esperando por você agora. O resto é contexto.</p>
+              <h2 class="mk-h2">Um link de catálogo pra cada cliente</h2>
+              <p>Quem responde "catálogo" no menu recebe um link com fotos, cards e
+                filtro por bairro, preço e quartos — sem precisar baixar nada nem
+                falar com ninguém antes de decidir o que quer ver de perto.</p>
             </div>
             <div class="mk-feature__visual mk-visual--panel" aria-hidden="true">
               <div class="mk-visual__stat">
@@ -140,7 +151,7 @@ import { AuthService } from "../../core/services/auth.service";
             </div>
           </div>
 
-          <div class="mk-feature">
+          <div [appScrollReveal]="0" class="mk-feature mk-reveal">
             <div class="mk-feature__text">
               <h2 class="mk-h2">Funil e agendamentos, sem planilha</h2>
               <p>Cada lead avança de etapa conforme a conversa acontece. Visitas e
@@ -158,7 +169,7 @@ import { AuthService } from "../../core/services/auth.service";
 
       <!-- pull quote -->
       <section class="mk-quote">
-        <p>
+        <p [appScrollReveal]="0" class="mk-reveal">
           "Se o cliente pergunta algo que não está no catálogo, a IA não chuta —
           ela diz que vai confirmar com você. Preço errado no WhatsApp custa
           venda e confiança; a gente prefere perder tempo a inventar resposta."
@@ -167,14 +178,28 @@ import { AuthService } from "../../core/services/auth.service";
 
       <!-- cta -->
       <section class="mk-cta">
-        <h2 class="mk-h2 mk-h2--inverse">Solte o celular. A gente cuida da primeira resposta.</h2>
-        <a routerLink="/entrar" class="mk-btn mk-btn--brass">Criar minha conta</a>
+        <h2 [appScrollReveal]="0" class="mk-h2 mk-h2--inverse mk-reveal">
+          Solte o celular. A gente cuida da primeira resposta.
+        </h2>
+        <a [href]="whatsappUrl" target="_blank" rel="noopener" class="mk-btn mk-btn--brass">
+          Fazer seu orçamento
+        </a>
       </section>
 
       <footer class="mk-footer">
         <span class="mk-wordmark mk-wordmark--small">Imoboo</span>
-        <span>CRM para corretores e imobiliárias.</span>
+        <span>CRM para corretores autônomos.</span>
       </footer>
+
+      <!-- botao flutuante -->
+      <a [href]="whatsappUrl" target="_blank" rel="noopener" class="mk-fab">
+        <span class="mk-fab__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+            <path d="M12 2a10 10 0 0 0-8.6 15L2 22l5.2-1.4A10 10 0 1 0 12 2Zm0 18.2a8.1 8.1 0 0 1-4.2-1.1l-.3-.2-3.1.8.8-3-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.4-.7-1.7-.8-.2-.1-.4-.1-.6.1-.2.2-.6.8-.8 1-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-2-1.2 7.4 7.4 0 0 1-1.4-1.7c-.1-.2 0-.4.1-.5l.4-.4.2-.4c.1-.1.1-.3 0-.4-.1-.1-.6-1.5-.9-2-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.5.1-.7.3a2.7 2.7 0 0 0-.9 2c0 1.2.9 2.3 1 2.5.1.2 1.7 2.7 4.2 3.7.6.2 1 .4 1.4.5.6.2 1.1.1 1.5.1.5-.1 1.4-.6 1.6-1.1.2-.5.2-1 .1-1.1-.1-.1-.2-.2-.4-.3Z"/>
+          </svg>
+        </span>
+        <span class="mk-fab__label">Fazer orçamento</span>
+      </a>
     </div>
   `,
   styles: [`
@@ -189,6 +214,7 @@ import { AuthService } from "../../core/services/auth.service";
       --mk-brass: #A87830;
       --mk-brass-bright: #C79A52;
       --mk-forest: #2F4A3B;
+      --mk-whatsapp: #25D366;
       --mk-line-dark: rgba(239, 234, 224, 0.14);
       --mk-line-light: rgba(23, 26, 33, 0.12);
       --font-serif: "Fraunces", Georgia, serif;
@@ -199,15 +225,24 @@ import { AuthService } from "../../core/services/auth.service";
     .mk { color: var(--mk-text); }
     .mk h1, .mk h2, .mk h3 { font-family: var(--font-serif); font-weight: 500; letter-spacing: -0.01em; }
 
+    /* --- revelacao no scroll: aplica em todo elemento marcado appScrollReveal --- */
+    .mk-reveal {
+      opacity: 0;
+      transform: translateY(28px);
+      transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .mk-reveal.is-visible { opacity: 1; transform: translateY(0); }
+
     .mk-btn {
       display: inline-flex; align-items: center; justify-content: center;
       padding: 12px 22px; border-radius: 3px; font-weight: 600; font-size: 15px;
       text-decoration: none; border: 1px solid transparent; cursor: pointer;
+      transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
     }
     .mk-btn--brass { background: var(--mk-brass); color: #1A1305; }
-    .mk-btn--brass:hover { background: var(--mk-brass-bright); text-decoration: none; }
+    .mk-btn--brass:hover { background: var(--mk-brass-bright); text-decoration: none; transform: translateY(-2px); box-shadow: 0 10px 24px -10px rgba(168,120,48,0.55); }
     .mk-btn--ghost { border-color: var(--mk-line-light); color: var(--mk-text); }
-    .mk-btn--ghost:hover { background: var(--mk-paper-soft); text-decoration: none; }
+    .mk-btn--ghost:hover { background: var(--mk-paper-soft); text-decoration: none; transform: translateY(-2px); }
     .mk-btn--ghost-dark { border-color: var(--mk-line-dark); color: var(--mk-paper); }
     .mk-btn--ghost-dark:hover { background: rgba(255,255,255,0.06); text-decoration: none; }
 
@@ -220,13 +255,22 @@ import { AuthService } from "../../core/services/auth.service";
     .mk-wordmark { font-family: var(--font-serif); font-size: 21px; font-weight: 600; color: var(--mk-paper); }
     .mk-wordmark--small { font-size: 16px; }
     .mk-nav__links { display: flex; gap: 28px; flex: 1; justify-content: center; }
-    .mk-nav__links a { color: var(--mk-ink-soft); font-size: 14px; text-decoration: none; }
+    .mk-nav__links a { color: var(--mk-ink-soft); font-size: 14px; text-decoration: none; transition: color 0.2s ease; }
     .mk-nav__links a:hover { color: var(--mk-paper); text-decoration: none; }
 
     /* --- hero --- */
-    .mk-hero { background: var(--mk-ink); padding: 64px 32px 96px; }
+    .mk-hero { position: relative; background: var(--mk-ink); padding: 64px 32px 96px; overflow: hidden; }
+    .mk-hero__glow {
+      position: absolute; inset: -20% -10% auto -10%; height: 640px;
+      background: radial-gradient(closest-side, rgba(168,120,48,0.28), transparent 70%);
+      filter: blur(10px); animation: mk-drift 14s ease-in-out infinite alternate; pointer-events: none;
+    }
+    @keyframes mk-drift {
+      from { transform: translate(-4%, -2%) scale(1); }
+      to   { transform: translate(4%, 3%) scale(1.08); }
+    }
     .mk-hero__grid {
-      max-width: 1180px; margin: 0 auto;
+      position: relative; max-width: 1180px; margin: 0 auto;
       display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 64px; align-items: center;
     }
     .mk-h1 { color: var(--mk-paper); font-size: 44px; line-height: 1.16; margin: 0 0 24px; }
@@ -238,6 +282,11 @@ import { AuthService } from "../../core/services/auth.service";
     .mk-phone {
       width: 100%; max-width: 340px; border-radius: 22px; background: #0E1015;
       border: 1px solid var(--mk-line-dark); padding: 4px; box-shadow: 0 30px 60px -20px rgba(0,0,0,0.5);
+      animation: mk-float 6s ease-in-out infinite;
+    }
+    @keyframes mk-float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
     }
     .mk-phone__head {
       display: flex; align-items: center; gap: 8px; padding: 14px 16px;
@@ -288,18 +337,20 @@ import { AuthService } from "../../core/services/auth.service";
     .mk-h2 { font-size: 30px; line-height: 1.25; margin: 0 0 12px; max-width: 26ch; }
     .mk-h2--inverse { color: var(--mk-paper); }
 
-    /* --- steps (legitimately sequential, numbered) --- */
+    /* --- steps (legitimamente sequencial, numerado) --- */
     .mk-steps { list-style: none; margin: 48px 0 0; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 32px; }
     .mk-steps li { display: flex; flex-direction: column; gap: 10px; }
     .mk-steps__n {
       font-family: var(--font-serif); font-size: 15px; font-weight: 600; color: var(--mk-brass);
       border: 1px solid var(--mk-brass); width: 30px; height: 30px; border-radius: 50%;
       display: flex; align-items: center; justify-content: center;
+      transition: background 0.25s ease, color 0.25s ease;
     }
+    .mk-steps li:hover .mk-steps__n { background: var(--mk-brass); color: #1A1305; }
     .mk-steps h3 { font-size: 17px; margin: 0 0 4px; }
     .mk-steps p { margin: 0; color: var(--mk-text-soft); font-size: 14px; line-height: 1.55; }
 
-    /* --- feature rows (asymmetric, alternating — deliberately not identical cards) --- */
+    /* --- feature rows (assimetricas, alternadas) --- */
     .mk-feature {
       display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: center;
       padding: 56px 0; border-top: 1px solid var(--mk-line-light);
@@ -311,7 +362,9 @@ import { AuthService } from "../../core/services/auth.service";
     .mk-feature__visual {
       background: var(--mk-cream); border: 1px solid var(--mk-line-light); border-radius: 8px;
       padding: 32px; min-height: 180px; display: flex; align-items: center; justify-content: center;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
+    .mk-feature:hover .mk-feature__visual { transform: translateY(-4px); box-shadow: 0 20px 40px -24px rgba(23,26,33,0.25); }
     .mk-visual__card { display: flex; flex-direction: column; gap: 6px; font-size: 14px; }
     .mk-visual__code { font-family: var(--font-code); font-size: 12px; color: var(--mk-brass); letter-spacing: 0.03em; }
     .mk-visual__note { color: var(--mk-text-soft); font-size: 13px; }
@@ -319,7 +372,6 @@ import { AuthService } from "../../core/services/auth.service";
     .mk-visual__stat { display: flex; flex-direction: column; align-items: center; gap: 4px; }
     .mk-visual__big { font-family: var(--font-serif); font-size: 64px; color: var(--mk-forest); line-height: 1; }
 
-    .mk-visual__funnel { display: flex; flex-direction: column; gap: 10px; }
     .mk-visual--funnel { flex-direction: column; align-items: stretch; gap: 10px; padding: 32px; }
     .mk-visual__bar {
       background: var(--mk-forest); color: var(--mk-cream); font-size: 12px; font-weight: 500;
@@ -343,6 +395,18 @@ import { AuthService } from "../../core/services/auth.service";
       color: var(--mk-text-soft); font-size: 13px; max-width: 1180px; margin: 0 auto;
     }
 
+    /* --- botao flutuante --- */
+    .mk-fab {
+      position: fixed; right: 20px; bottom: 20px; z-index: 20;
+      display: flex; align-items: center; gap: 8px;
+      background: var(--mk-whatsapp); color: #fff; text-decoration: none;
+      padding: 12px 16px; border-radius: 100px; box-shadow: 0 12px 28px -8px rgba(37,211,102,0.55);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .mk-fab:hover { transform: translateY(-3px); box-shadow: 0 16px 32px -8px rgba(37,211,102,0.6); text-decoration: none; }
+    .mk-fab__icon { display: flex; }
+    .mk-fab__label { font-size: 13px; font-weight: 600; }
+
     @media (max-width: 900px) {
       .mk-hero__grid { grid-template-columns: 1fr; gap: 40px; }
       .mk-h1 { font-size: 32px; }
@@ -353,12 +417,16 @@ import { AuthService } from "../../core/services/auth.service";
     }
     @media (max-width: 560px) {
       .mk-steps { grid-template-columns: 1fr; }
+      .mk-fab__label { display: none; }
+      .mk-fab { padding: 14px; }
     }
   `],
 })
 export class LandingComponent implements OnInit {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
+
+  readonly whatsappUrl = WHATSAPP_URL;
 
   ngOnInit(): void {
     // Quem já está logado não precisa ver a landing de novo.

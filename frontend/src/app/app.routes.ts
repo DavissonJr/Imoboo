@@ -13,6 +13,11 @@ export const routes: Routes = [
     loadComponent: () => import("./features/auth/login.component").then((m) => m.LoginComponent),
   },
   {
+    path: "c/:tenantSlug",
+    loadComponent: () =>
+      import("./features/public-catalog/public-catalog.component").then((m) => m.PublicCatalogComponent),
+  },
+  {
     path: "primeiro-acesso",
     canActivate: [authGuard],
     loadComponent: () => import("./features/onboarding/onboarding.component").then((m) => m.OnboardingComponent),

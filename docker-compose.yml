@@ -47,6 +47,7 @@ services:
       Evolution__BaseUrl: ${EVOLUTION_BASE_URL}
       Evolution__ApiKey: ${EVOLUTION_API_KEY}
       Cors__Origins__0: ${FRONTEND_URL:-http://localhost:4200}
+      App__PublicBaseUrl: ${FRONTEND_URL:-http://localhost:4200}
     ports:
       - "5080:8080"
     volumes:
@@ -71,10 +72,60 @@ services:
       - api
     networks: [imoboo]
 
+  # --- Evolution API: integração de WhatsApp. Peça externa ao ImobooCRM,
+  # mas roda no mesmo compose por conveniência. Tem Postgres e Redis próprios,
+  # separados dos do ImobooCRM, para não misturar dado de aplicações diferentes.
+  evolution:
+    image: evoapicloud/evolution-api:latest
+    container_name: imoboo-evolution
+    restart: always
+    environment:
+      AUTHENTICATION_API_KEY: ${EVOLUTION_API_KEY}
+      SERVER_URL: ${EVOLUTION_PUBLIC_URL:-http://localhost:8080}
+      DATABASE_ENABLED: "true"
+      DATABASE_PROVIDER: postgresql
+      DATABASE_CONNECTION_URI: "postgresql://evolution:${EVOLUTION_DB_PASSWORD}@evolution-postgres:5432/evolution"
+      DATABASE_SAVE_DATA_INSTANCE: "true"
+      CACHE_REDIS_ENABLED: "true"
+      CACHE_REDIS_URI: "redis://evolution-redis:6379"
+      CACHE_REDIS_SAVE_INSTANCES: "true"
+    ports:
+      - "8080:8080"
+    volumes:
+      - evolution-instances:/evolution/instances
+    depends_on:
+      - evolution-postgres
+      - evolution-redis
+    networks: [imoboo]
+
+  evolution-postgres:
+    image: postgres:15-alpine
+    container_name: imoboo-evolution-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: evolution
+      POSTGRES_USER: evolution
+      POSTGRES_PASSWORD: ${EVOLUTION_DB_PASSWORD}
+    volumes:
+      - evolution-postgres-data:/var/lib/postgresql/data
+    networks: [imoboo]
+
+  evolution-redis:
+    image: redis:7-alpine
+    container_name: imoboo-evolution-redis
+    restart: always
+    command: redis-server --appendonly yes
+    volumes:
+      - evolution-redis-data:/data
+    networks: [imoboo]
+
 volumes:
   sqlserver-data:
   redis-data:
   uploads-data:
+  evolution-instances:
+  evolution-postgres-data:
+  evolution-redis-data:
 
 networks:
   imoboo:
