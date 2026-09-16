@@ -1,6 +1,9 @@
 import { Component, inject, signal } from "@angular/core";
 import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
 import { Router } from "@angular/router";
+import { ButtonModule } from "primeng/button";
+import { CardModule } from "primeng/card";
+import { InputTextModule } from "primeng/inputtext";
 import { AuthService } from "../../core/services/auth.service";
 import { SettingsService } from "../../core/services/settings.service";
 
@@ -19,10 +22,10 @@ const TOUR_CARDS: TourCard[] = [
 @Component({
   selector: "app-onboarding",
   standalone: true,
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, ButtonModule, CardModule, InputTextModule],
   template: `
     <div class="onboarding">
-      <div class="onboarding__card panel">
+      <p-card styleClass="onboarding-card">
         <div class="steps">
           @for (n of [1, 2, 3]; track n) {
             <span class="steps__dot" [class.is-active]="step() === n" [class.is-done]="step() > n"></span>
@@ -37,25 +40,24 @@ const TOUR_CARDS: TourCard[] = [
             <form [formGroup]="passwordForm" (ngSubmit)="submitPassword()">
               <div class="field">
                 <label for="currentPassword">Senha provisória</label>
-                <input id="currentPassword" type="password" formControlName="currentPassword" autocomplete="current-password" />
+                <input pInputText id="currentPassword" type="password" formControlName="currentPassword" autocomplete="current-password" />
               </div>
               <div class="field">
                 <label for="newPassword">Nova senha</label>
-                <input id="newPassword" type="password" formControlName="newPassword" autocomplete="new-password" />
+                <input pInputText id="newPassword" type="password" formControlName="newPassword" autocomplete="new-password" />
                 <span class="hint-text">Pelo menos 8 caracteres.</span>
               </div>
               <div class="field">
                 <label for="confirmPassword">Confirme a nova senha</label>
-                <input id="confirmPassword" type="password" formControlName="confirmPassword" autocomplete="new-password" />
+                <input pInputText id="confirmPassword" type="password" formControlName="confirmPassword" autocomplete="new-password" />
               </div>
 
               @if (passwordError()) {
                 <p class="error-text">{{ passwordError() }}</p>
               }
 
-              <button type="submit" class="btn btn--primary" [disabled]="passwordSaving()">
-                {{ passwordSaving() ? "Salvando..." : "Trocar senha e continuar" }}
-              </button>
+              <p-button type="submit" label="Trocar senha e continuar" icon="pi pi-arrow-right" iconPos="right"
+                [disabled]="passwordSaving()" [loading]="passwordSaving()" styleClass="full-width" />
             </form>
           }
 
@@ -72,7 +74,7 @@ const TOUR_CARDS: TourCard[] = [
               }
             </div>
 
-            <button type="button" class="btn btn--primary" (click)="step.set(3)">Entendi, continuar</button>
+            <p-button label="Entendi, continuar" icon="pi pi-arrow-right" iconPos="right" (onClick)="step.set(3)" styleClass="full-width" />
           }
 
           @case (3) {
@@ -91,40 +93,47 @@ const TOUR_CARDS: TourCard[] = [
             }
 
             <div class="actions">
-              <button type="button" class="btn" (click)="loadQrCode()" [disabled]="qrLoading()">
-                {{ qrLoading() ? "Gerando..." : (qrImage() ? "Gerar outro código" : "Gerar QR code") }}
-              </button>
-              <button type="button" class="btn btn--primary" (click)="finish()">Concluir</button>
+              <p-button [label]="qrLoading() ? 'Gerando...' : (qrImage() ? 'Gerar outro código' : 'Gerar QR code')"
+                icon="pi pi-qrcode" [severity]="'secondary'" [outlined]="true"
+                (onClick)="loadQrCode()" [disabled]="qrLoading()" [loading]="qrLoading()" styleClass="full-width" />
+              <p-button label="Concluir" icon="pi pi-check" (onClick)="finish()" styleClass="full-width" />
             </div>
           }
         }
-      </div>
+      </p-card>
     </div>
   `,
   styles: [`
-    .onboarding { min-height: 100vh; display: grid; place-items: center; padding: var(--gap); background: var(--canvas); }
-    .onboarding__card { width: 100%; max-width: 480px; padding: var(--gap-lg); }
+    .onboarding { min-height: 100vh; display: grid; place-items: center; padding: 20px; background: var(--p-surface-50); }
+    :host ::ng-deep .onboarding-card { width: 100%; max-width: 480px; }
+    :host ::ng-deep .onboarding-card .p-card-body { padding: 28px; }
+    :host ::ng-deep .full-width { width: 100%; justify-content: center; }
 
-    .steps { display: flex; gap: 6px; margin-bottom: var(--gap-lg); }
-    .steps__dot { width: 28px; height: 4px; border-radius: 100px; background: var(--rule); }
-    .steps__dot.is-active { background: var(--ink); }
-    .steps__dot.is-done { background: var(--state-auto); }
+    .steps { display: flex; gap: 6px; margin-bottom: 24px; }
+    .steps__dot { width: 28px; height: 4px; border-radius: 100px; background: var(--p-content-border-color); }
+    .steps__dot.is-active { background: var(--p-primary-color); }
+    .steps__dot.is-done { background: var(--p-green-500); }
 
-    h1 { margin-bottom: var(--gap-xs); }
-    .lede { color: var(--ink-soft); margin-bottom: var(--gap-lg); }
+    h1 { margin: 0 0 4px; font-size: 22px; font-weight: 700; }
+    .lede { color: var(--p-text-muted-color); margin: 0 0 24px; font-size: 14px; }
 
-    .hint-text { display: block; font-size: 12px; color: var(--ink-faint); margin-top: 2px; }
+    .field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 16px; }
+    .field label { font-size: 13px; font-weight: 600; color: var(--p-text-muted-color); }
+    .field input { width: 100%; }
 
-    .tour { display: flex; flex-direction: column; gap: var(--gap); margin-bottom: var(--gap-lg); }
-    .tour__card { padding: var(--gap); border-radius: var(--radius); background: var(--surface-sunken); }
-    .tour__card h3 { margin-bottom: 4px; }
-    .tour__card p { margin: 0; color: var(--ink-soft); font-size: 14px; }
+    .hint-text { display: block; font-size: 12px; color: var(--p-text-muted-color); margin-top: 2px; }
+    .error-text { color: var(--p-red-500); font-size: 13px; margin: 0 0 12px; }
 
-    .qr { text-align: center; margin-bottom: var(--gap); }
-    .qr img { width: 220px; height: 220px; border: 1px solid var(--rule); border-radius: var(--radius); margin-bottom: var(--gap-sm); }
+    .tour { display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; }
+    .tour__card { padding: 14px 16px; border-radius: 10px; background: var(--p-surface-100); }
+    .tour__card h3 { margin: 0 0 4px; font-size: 15px; font-weight: 700; }
+    .tour__card p { margin: 0; color: var(--p-text-muted-color); font-size: 13.5px; }
 
-    .actions { display: flex; gap: var(--gap-sm); }
-    .actions .btn { flex: 1; justify-content: center; }
+    .qr { text-align: center; margin-bottom: 16px; }
+    .qr img { width: 220px; height: 220px; border: 1px solid var(--p-content-border-color); border-radius: 8px; margin-bottom: 10px; }
+
+    .actions { display: flex; gap: 8px; }
+    .actions p-button { flex: 1; }
   `],
 })
 export class OnboardingComponent {

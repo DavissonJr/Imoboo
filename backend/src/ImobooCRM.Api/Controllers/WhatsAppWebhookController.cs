@@ -46,6 +46,11 @@ public sealed class WhatsAppWebhookController(
         if (payload.Data.Key.FromMe)
             return Ok(new { ignored = "mensagem_propria" });
 
+        // Grupo: JID sempre termina em @g.us. O produto e para atendimento 1:1,
+        // nao para responder em grupos de WhatsApp.
+        if (payload.Data.Key.RemoteJid?.EndsWith("@g.us", StringComparison.OrdinalIgnoreCase) == true)
+            return Ok(new { ignored = "mensagem_de_grupo" });
+
         var tenant = await ResolveTenantAsync(payload.Instance, ct);
         if (tenant is null)
         {

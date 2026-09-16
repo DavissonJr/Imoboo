@@ -1,5 +1,9 @@
 import { Component, OnInit, inject, signal } from "@angular/core";
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from "@angular/forms";
+import { ButtonModule } from "primeng/button";
+import { CardModule } from "primeng/card";
+import { InputTextModule } from "primeng/inputtext";
+import { TagModule } from "primeng/tag";
 import { TenantSettings } from "../../core/models";
 import { AuthService } from "../../core/services/auth.service";
 import { SettingsService } from "../../core/services/settings.service";
@@ -7,87 +11,75 @@ import { SettingsService } from "../../core/services/settings.service";
 @Component({
   selector: "app-profile",
   standalone: true,
-  imports: [ReactiveFormsModule, FormsModule],
+  imports: [ReactiveFormsModule, FormsModule, ButtonModule, CardModule, InputTextModule, TagModule],
   template: `
     <section class="page">
-      <header class="page__head">
+      <header class="page-head">
         <h1>Perfil</h1>
-        <p class="page__sub">Seus dados, sua senha e a conexão do WhatsApp.</p>
+        <p class="page-sub">Seus dados, sua senha e a conexão do WhatsApp.</p>
       </header>
 
       <div class="grid">
-        <section class="panel card">
-          <h2>Meus dados</h2>
+        <p-card styleClass="card" header="Meus dados">
           <dl class="facts">
             <dt>Nome</dt><dd>{{ auth.user()?.name }}</dd>
             <dt>E-mail</dt><dd>{{ auth.user()?.email }}</dd>
             <dt>Perfil</dt><dd>{{ auth.user()?.role }}</dd>
             <dt>Imobiliária</dt><dd>{{ auth.user()?.tenantName }}</dd>
           </dl>
-        </section>
+        </p-card>
 
-        <section class="panel card">
-          <h2>Trocar senha</h2>
+        <p-card styleClass="card" header="Trocar senha">
           <form [formGroup]="passwordForm" (ngSubmit)="submitPassword()">
             <div class="field">
               <label for="currentPassword">Senha atual</label>
-              <input id="currentPassword" type="password" formControlName="currentPassword" autocomplete="current-password" />
+              <input pInputText id="currentPassword" type="password" formControlName="currentPassword" autocomplete="current-password" />
             </div>
             <div class="field">
               <label for="newPassword">Nova senha</label>
-              <input id="newPassword" type="password" formControlName="newPassword" autocomplete="new-password" />
+              <input pInputText id="newPassword" type="password" formControlName="newPassword" autocomplete="new-password" />
               <span class="hint-text">Pelo menos 8 caracteres.</span>
             </div>
             <div class="field">
               <label for="confirmPassword">Confirme a nova senha</label>
-              <input id="confirmPassword" type="password" formControlName="confirmPassword" autocomplete="new-password" />
+              <input pInputText id="confirmPassword" type="password" formControlName="confirmPassword" autocomplete="new-password" />
             </div>
 
             @if (passwordError()) {
               <p class="error-text">{{ passwordError() }}</p>
             }
             @if (passwordSuccess()) {
-              <p class="success-text">Senha alterada.</p>
+              <p class="success-text"><i class="pi pi-check-circle"></i> Senha alterada.</p>
             }
 
-            <button type="submit" class="btn btn--primary" [disabled]="passwordSaving()">
-              {{ passwordSaving() ? "Salvando..." : "Trocar senha" }}
-            </button>
+            <p-button type="submit" label="Trocar senha" icon="pi pi-lock" [disabled]="passwordSaving()" [loading]="passwordSaving()" />
           </form>
-        </section>
+        </p-card>
 
-        <section class="panel card card--wide">
-          <h2>WhatsApp</h2>
-
+        <p-card styleClass="card card--wide" header="WhatsApp">
           @if (loadingSettings()) {
-            <p class="page__sub">Verificando conexão...</p>
+            <p class="page-sub">Verificando conexão...</p>
           } @else {
             @if (settings(); as s) {
               <div class="whatsapp-status">
-                <span class="state-tag" [class]="s.whatsAppConnected ? 'state-tag--auto' : 'state-tag--wait'">
-                  {{ s.whatsAppConnected ? "Conectado" : "Não conectado" }}
-                </span>
+                <p-tag [value]="s.whatsAppConnected ? 'Conectado' : 'Não conectado'" [severity]="s.whatsAppConnected ? 'success' : 'warn'" />
                 @if (s.whatsAppNumber) {
-                  <span class="page__sub">{{ s.whatsAppNumber }}</span>
+                  <span class="page-sub">{{ s.whatsAppNumber }}</span>
                 }
               </div>
 
               @if (!auth.isAdmin()) {
-                <p class="page__sub">Só um administrador pode conectar ou trocar o número do WhatsApp.</p>
+                <p class="page-sub">Só um administrador pode conectar ou trocar o número do WhatsApp.</p>
               } @else {
                 <div class="field">
                   <label for="instanceName">Nome da instância (Evolution API)</label>
-                  <input id="instanceName" [(ngModel)]="instanceName" [ngModelOptions]="{standalone: true}" placeholder="minha-imobiliaria" />
+                  <input pInputText id="instanceName" [(ngModel)]="instanceName" [ngModelOptions]="{standalone: true}" placeholder="minha-imobiliaria" />
                 </div>
-                <button type="button" class="btn" (click)="saveInstance()" [disabled]="savingInstance()">
-                  {{ savingInstance() ? "Salvando..." : "Salvar instância" }}
-                </button>
+                <p-button label="Salvar instância" icon="pi pi-save" [text]="true" (onClick)="saveInstance()" [disabled]="savingInstance()" [loading]="savingInstance()" />
 
                 @if (!s.whatsAppConnected) {
                   <div class="qr-block">
-                    <button type="button" class="btn btn--primary" (click)="loadQrCode()" [disabled]="qrLoading()">
-                      {{ qrLoading() ? "Gerando..." : "Gerar QR code" }}
-                    </button>
+                    <p-button label="Gerar QR code" icon="pi pi-qrcode" (onClick)="loadQrCode()" [disabled]="qrLoading()" [loading]="qrLoading()" />
 
                     @if (qrImage()) {
                       <div class="qr">
@@ -103,36 +95,43 @@ import { SettingsService } from "../../core/services/settings.service";
               }
             }
           }
-        </section>
+        </p-card>
       </div>
     </section>
   `,
   styles: [`
-    .page { padding: var(--gap-lg); max-width: 900px; }
-    .page__head { margin-bottom: var(--gap-lg); }
-    .page__sub { color: var(--ink-soft); margin: 0; }
+    .page { padding: 28px; max-width: 900px; }
+    .page-head { margin-bottom: 24px; }
+    .page-head h1 { font-size: 24px; font-weight: 700; letter-spacing: -0.02em; margin: 0 0 4px; }
+    .page-sub { color: var(--p-text-muted-color); margin: 0; font-size: 14px; }
 
-    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap); }
-    .card { padding: var(--gap-lg); }
-    .card--wide { grid-column: span 2; }
-    .card h2 { margin-bottom: var(--gap); }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    :host ::ng-deep .card--wide { grid-column: span 2; }
+    :host ::ng-deep .card .p-card-body { padding: 20px; }
+    :host ::ng-deep .card .p-card-title { font-size: 16px; font-weight: 700; }
 
-    .facts { display: grid; grid-template-columns: auto 1fr; gap: 6px var(--gap); margin: 0 0 var(--gap); }
-    .facts dt { color: var(--ink-soft); font-size: 13px; }
-    .facts dd { margin: 0; font-weight: 500; }
+    .facts { display: grid; grid-template-columns: auto 1fr; gap: 8px 16px; margin: 0; }
+    .facts dt { color: var(--p-text-muted-color); font-size: 13px; }
+    .facts dd { margin: 0; font-weight: 600; }
 
-    .hint-text { display: block; font-size: 12px; color: var(--ink-faint); margin-top: 2px; }
-    .success-text { color: var(--state-auto); font-size: 13px; }
+    .field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 16px; }
+    .field label { font-size: 13px; font-weight: 600; color: var(--p-text-muted-color); }
+    .field input { width: 100%; }
 
-    .whatsapp-status { display: flex; align-items: center; gap: var(--gap-sm); margin-bottom: var(--gap); }
+    .hint-text { display: block; font-size: 12px; color: var(--p-text-muted-color); margin-top: 2px; }
+    .success-text { color: var(--p-green-500); font-size: 13px; display: flex; align-items: center; gap: 6px; }
+    .error-text { color: var(--p-red-500); font-size: 13px; margin: 0 0 12px; }
 
-    .qr-block { margin-top: var(--gap); padding-top: var(--gap); border-top: 1px solid var(--rule); }
-    .qr { margin-top: var(--gap); }
-    .qr img { width: 200px; height: 200px; border: 1px solid var(--rule); border-radius: var(--radius); display: block; margin-bottom: var(--gap-sm); }
+    .whatsapp-status { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+
+    .qr-block { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--p-content-border-color); }
+    .qr { margin-top: 16px; }
+    .qr img { width: 200px; height: 200px; border: 1px solid var(--p-content-border-color); border-radius: 8px; display: block; margin-bottom: 10px; }
 
     @media (max-width: 760px) {
+      .page { padding: 18px; }
       .grid { grid-template-columns: 1fr; }
-      .card--wide { grid-column: span 1; }
+      :host ::ng-deep .card--wide { grid-column: span 1; }
     }
   `],
 })

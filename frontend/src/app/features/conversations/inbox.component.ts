@@ -130,9 +130,9 @@ import { ConversationService } from "../../core/services/conversation.service";
     </div>
   `,
   styles: [`
-    .inbox { display: grid; grid-template-columns: 340px 1fr; height: 100vh; }
+    .inbox { display: grid; grid-template-columns: 340px 1fr; height: 100dvh; }
 
-    .queue { border-right: 1px solid var(--rule); background: var(--surface); overflow-y: auto; }
+    .queue { border-right: 1px solid var(--rule); background: var(--surface); overflow-y: auto; min-height: 0; }
     .queue__head { padding: var(--gap); border-bottom: 1px solid var(--rule); position: sticky; top: 0; background: var(--surface); }
     .queue__head h1 { font-size: 19px; margin-bottom: var(--gap-sm); }
     .queue__toggle { display: flex; align-items: center; gap: var(--gap-sm); font-size: 13px; color: var(--ink-soft); }
@@ -163,7 +163,7 @@ import { ConversationService } from "../../core/services/conversation.service";
       font-size: 12px; font-weight: 600; text-align: center;
     }
 
-    .thread { display: flex; flex-direction: column; min-width: 0; }
+    .thread { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
     .thread__head {
       display: flex; justify-content: space-between; align-items: center; gap: var(--gap);
       padding: var(--gap) var(--gap-lg); border-bottom: 1px solid var(--rule); background: var(--surface);
@@ -194,8 +194,12 @@ import { ConversationService } from "../../core/services/conversation.service";
     .hint { color: var(--ink-soft); font-size: 13px; padding: var(--gap); margin: 0; }
 
     @media (max-width: 900px) {
-      .inbox { grid-template-columns: 1fr; height: auto; }
-      .queue { border-right: none; border-bottom: 1px solid var(--rule); max-height: 42vh; }
+      .inbox {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 1fr;
+        height: calc(100dvh - 56px);
+      }
+      .queue { border-right: none; border-bottom: 1px solid var(--rule); max-height: 38vh; }
     }
   `],
 })

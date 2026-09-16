@@ -2,6 +2,14 @@ import { DatePipe } from "@angular/common";
 import { Component, OnDestroy, OnInit, inject, signal } from "@angular/core";
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from "@angular/forms";
 import { Subject, debounceTime, distinctUntilChanged, switchMap, takeUntil } from "rxjs";
+import { ButtonModule } from "primeng/button";
+import { CardModule } from "primeng/card";
+import { CheckboxModule } from "primeng/checkbox";
+import { InputTextModule } from "primeng/inputtext";
+import { SelectModule } from "primeng/select";
+import { SkeletonModule } from "primeng/skeleton";
+import { TableModule } from "primeng/table";
+import { TextareaModule } from "primeng/textarea";
 import {
   APPOINTMENT_STATUS_LABEL, APPOINTMENT_TYPE_LABEL, AppointmentListItem,
   AppointmentStatus, AppointmentType, LeadListItem, PropertyListItem,
@@ -13,178 +21,206 @@ import { PropertyService } from "../../core/services/property.service";
 @Component({
   selector: "app-appointment-list",
   standalone: true,
-  imports: [ReactiveFormsModule, FormsModule, DatePipe],
+  imports: [
+    ReactiveFormsModule, FormsModule, DatePipe, ButtonModule, CardModule,
+    SelectModule, InputTextModule, TextareaModule, CheckboxModule, TableModule, SkeletonModule,
+  ],
   template: `
     <section class="page">
-      <header class="page__head">
+      <header class="page-head">
         <div>
           <h1>Agendamentos</h1>
-          <p class="page__sub">Visitas, retornos e ligações combinados com os leads.</p>
+          <p class="page-sub">Visitas, retornos e ligações combinados com os leads.</p>
         </div>
-        <button type="button" class="btn btn--primary" (click)="toggleForm()">
-          {{ showForm() ? "Cancelar" : "Novo agendamento" }}
-        </button>
+        <p-button
+          [label]="showForm() ? 'Cancelar' : 'Novo agendamento'"
+          [icon]="showForm() ? 'pi pi-times' : 'pi pi-plus'"
+          [severity]="showForm() ? 'secondary' : undefined"
+          (onClick)="toggleForm()" />
       </header>
 
       @if (showForm()) {
-        <form class="panel form" (ngSubmit)="submit()" [formGroup]="form">
-          <div class="form__grid">
-            <div class="field">
-              <label for="leadSearch">Lead</label>
-              @if (selectedLead()) {
-                <div class="picked">
-                  <span>{{ selectedLead()!.name }} · {{ selectedLead()!.phone }}</span>
-                  <button type="button" class="btn btn--quiet" (click)="clearLead()">Trocar</button>
-                </div>
-              } @else {
-                <input id="leadSearch" placeholder="Buscar por nome ou telefone" (input)="leadTerm$.next($any($event.target).value)" />
-                @if (leadResults().length > 0) {
-                  <ul class="results">
-                    @for (l of leadResults(); track l.id) {
-                      <li><button type="button" (click)="pickLead(l)">{{ l.name }} · {{ l.phone }}</button></li>
-                    }
-                  </ul>
+        <p-card styleClass="form-card">
+          <form (ngSubmit)="submit()" [formGroup]="form">
+            <div class="form-grid">
+              <div class="field">
+                <label for="leadSearch">Lead</label>
+                @if (selectedLead()) {
+                  <div class="picked">
+                    <span>{{ selectedLead()!.name }} · {{ selectedLead()!.phone }}</span>
+                    <p-button label="Trocar" [text]="true" size="small" (onClick)="clearLead()" />
+                  </div>
+                } @else {
+                  <input pInputText id="leadSearch" placeholder="Buscar por nome ou telefone"
+                    (input)="leadTerm$.next($any($event.target).value)" />
+                  @if (leadResults().length > 0) {
+                    <ul class="results">
+                      @for (l of leadResults(); track l.id) {
+                        <li><button type="button" (click)="pickLead(l)">{{ l.name }} · {{ l.phone }}</button></li>
+                      }
+                    </ul>
+                  }
                 }
-              }
-            </div>
+              </div>
 
-            <div class="field">
-              <label for="propertySearch">Imóvel (opcional)</label>
-              @if (selectedProperty()) {
-                <div class="picked">
-                  <span class="code">{{ selectedProperty()!.code }}</span> {{ selectedProperty()!.title }}
-                  <button type="button" class="btn btn--quiet" (click)="clearProperty()">Trocar</button>
-                </div>
-              } @else {
-                <input id="propertySearch" placeholder="Buscar por código ou título" (input)="propertyTerm$.next($any($event.target).value)" />
-                @if (propertyResults().length > 0) {
-                  <ul class="results">
-                    @for (p of propertyResults(); track p.id) {
-                      <li><button type="button" (click)="pickProperty(p)"><span class="code">{{ p.code }}</span> {{ p.title }}</button></li>
-                    }
-                  </ul>
+              <div class="field">
+                <label for="propertySearch">Imóvel (opcional)</label>
+                @if (selectedProperty()) {
+                  <div class="picked">
+                    <span class="code">{{ selectedProperty()!.code }}</span> {{ selectedProperty()!.title }}
+                    <p-button label="Trocar" [text]="true" size="small" (onClick)="clearProperty()" />
+                  </div>
+                } @else {
+                  <input pInputText id="propertySearch" placeholder="Buscar por código ou título"
+                    (input)="propertyTerm$.next($any($event.target).value)" />
+                  @if (propertyResults().length > 0) {
+                    <ul class="results">
+                      @for (p of propertyResults(); track p.id) {
+                        <li><button type="button" (click)="pickProperty(p)"><span class="code">{{ p.code }}</span> {{ p.title }}</button></li>
+                      }
+                    </ul>
+                  }
                 }
-              }
+              </div>
             </div>
-          </div>
 
-          <div class="form__grid form__grid--3">
+            <div class="form-grid form-grid--3">
+              <div class="field">
+                <label for="type">Tipo</label>
+                <p-select id="type" formControlName="type" [options]="typeOptions" optionLabel="label" optionValue="value" />
+              </div>
+              <div class="field">
+                <label for="scheduledAt">Data e hora</label>
+                <input pInputText id="scheduledAt" type="datetime-local" formControlName="scheduledAt" />
+              </div>
+            </div>
+
             <div class="field">
-              <label for="type">Tipo</label>
-              <select id="type" formControlName="type">
-                @for (t of typeOptions; track t.value) {
-                  <option [ngValue]="t.value">{{ t.label }}</option>
-                }
-              </select>
+              <label for="notes">Observações</label>
+              <textarea pTextarea id="notes" formControlName="notes" rows="2"></textarea>
             </div>
-            <div class="field">
-              <label for="scheduledAt">Data e hora</label>
-              <input id="scheduledAt" type="datetime-local" formControlName="scheduledAt" />
-            </div>
-          </div>
 
-          <div class="field">
-            <label for="notes">Observações</label>
-            <textarea id="notes" formControlName="notes" rows="2"></textarea>
-          </div>
+            @if (formError()) {
+              <p class="error-text">{{ formError() }}</p>
+            }
 
-          @if (formError()) {
-            <p class="error-text">{{ formError() }}</p>
-          }
-
-          <button type="submit" class="btn btn--primary" [disabled]="form.invalid || !selectedLead() || saving()">
-            {{ saving() ? "Salvando..." : "Criar agendamento" }}
-          </button>
-        </form>
+            <p-button
+              type="submit" label="Criar agendamento" icon="pi pi-check"
+              [disabled]="form.invalid || !selectedLead() || saving()" [loading]="saving()" />
+          </form>
+        </p-card>
       }
 
-      <div class="filters panel">
+      <div class="filters">
         <label class="filters__check">
-          <input type="checkbox" [(ngModel)]="onlyUpcoming" [ngModelOptions]="{standalone: true}" (ngModelChange)="load()" />
-          Só os que ainda vão acontecer
+          <p-checkbox [(ngModel)]="onlyUpcoming" [ngModelOptions]="{standalone: true}" (ngModelChange)="load()" [binary]="true" inputId="upcoming" />
+          <span (click)="onlyUpcoming = !onlyUpcoming; load()">Só os que ainda vão acontecer</span>
         </label>
       </div>
 
       @if (loading()) {
-        <p class="page__sub">Carregando agendamentos...</p>
+        <p-skeleton height="280px" />
       } @else if (appointments().length === 0) {
-        <div class="panel empty">
+        <div class="empty">
           <h3>Nenhum agendamento aqui</h3>
           <p>Crie um agendamento para acompanhar visitas e retornos com os leads.</p>
         </div>
       } @else {
-        <div class="panel">
-          <table>
-            <thead>
-              <tr>
-                <th>Quando</th>
-                <th>Lead</th>
-                <th>Imóvel</th>
-                <th>Tipo</th>
-                <th>Situação</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (a of appointments(); track a.id) {
-                <tr>
-                  <td>{{ a.scheduledAtUtc | date: "dd/MM/yy HH:mm" }}</td>
-                  <td>
-                    <span class="cell-title">{{ a.leadName }}</span>
-                    <span class="cell-note">{{ a.leadPhone }}</span>
-                  </td>
-                  <td>
-                    @if (a.propertyCode) {
-                      <span class="code">{{ a.propertyCode }}</span> {{ a.propertyTitle }}
-                    } @else { — }
-                  </td>
-                  <td>{{ typeLabel(a.type) }}</td>
-                  <td>
-                    <select [ngModel]="a.status" [ngModelOptions]="{standalone: true}" (ngModelChange)="changeStatus(a, $event)">
-                      @for (s of statusOptions; track s.value) {
-                        <option [ngValue]="s.value">{{ s.label }}</option>
-                      }
-                    </select>
-                  </td>
-                  <td>
-                    <button type="button" class="btn btn--quiet" (click)="remove(a)">Excluir</button>
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
+        <p-table [value]="appointments()" styleClass="p-datatable-sm" [rowHover]="true">
+          <ng-template #header>
+            <tr>
+              <th>Quando</th>
+              <th>Lead</th>
+              <th>Imóvel</th>
+              <th>Tipo</th>
+              <th>Situação</th>
+              <th></th>
+            </tr>
+          </ng-template>
+          <ng-template #body let-a>
+            <tr>
+              <td>{{ a.scheduledAtUtc | date: "dd/MM/yy HH:mm" }}</td>
+              <td>
+                <span class="cell-title">{{ a.leadName }}</span>
+                <span class="cell-note">{{ a.leadPhone }}</span>
+              </td>
+              <td>
+                @if (a.propertyCode) {
+                  <span class="code">{{ a.propertyCode }}</span> {{ a.propertyTitle }}
+                } @else { — }
+              </td>
+              <td>{{ typeLabel(a.type) }}</td>
+              <td>
+                <p-select
+                  [ngModel]="a.status" [ngModelOptions]="{standalone: true}" (ngModelChange)="changeStatus(a, $event)"
+                  [options]="statusOptions" optionLabel="label" optionValue="value" styleClass="status-select" />
+              </td>
+              <td>
+                <p-button icon="pi pi-trash" [text]="true" [rounded]="true" severity="danger" (onClick)="remove(a)" />
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
 
-        <p class="page__sub count">{{ total() }} agendamentos</p>
+        <p class="count">{{ total() }} agendamentos</p>
       }
     </section>
   `,
   styles: [`
-    .page { padding: var(--gap-lg); max-width: 1100px; }
-    .page__head { display: flex; justify-content: space-between; align-items: flex-end; gap: var(--gap); margin-bottom: var(--gap-lg); }
-    .page__sub { color: var(--ink-soft); margin: 0; }
+    .page { padding: 28px; max-width: 1100px; }
+    .page-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; }
+    .page-head h1 { font-size: 24px; font-weight: 700; letter-spacing: -0.02em; margin: 0 0 4px; }
+    .page-sub { color: var(--p-text-muted-color); margin: 0; font-size: 14px; }
 
-    .form { padding: var(--gap-lg); margin-bottom: var(--gap); }
-    .form__grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 var(--gap); }
-    .form__grid--3 { grid-template-columns: repeat(3, 1fr); }
+    :host ::ng-deep .form-card { margin-bottom: 16px; }
+    :host ::ng-deep .form-card .p-card-body { padding: 20px; }
 
-    .picked { display: flex; align-items: center; justify-content: space-between; gap: var(--gap-sm); padding: 9px 11px; border: 1px solid var(--rule-strong); border-radius: var(--radius); background: var(--surface-sunken); font-size: 14px; }
-    .results { list-style: none; margin: 4px 0 0; padding: 0; border: 1px solid var(--rule); border-radius: var(--radius); overflow: hidden; max-height: 180px; overflow-y: auto; }
-    .results button { display: block; width: 100%; text-align: left; padding: 8px 11px; border: none; background: var(--surface); font: inherit; font-size: 14px; cursor: pointer; }
-    .results button:hover { background: var(--surface-sunken); }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 16px; }
+    .form-grid--3 { grid-template-columns: repeat(3, 1fr); }
+    .field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 16px; }
+    .field label { font-size: 13px; font-weight: 600; color: var(--p-text-muted-color); }
+    .field input, .field textarea, .field p-select { width: 100%; }
 
-    .filters { display: flex; gap: var(--gap); align-items: center; padding: var(--gap); margin-bottom: var(--gap); }
-    .filters__check { display: flex; align-items: center; gap: var(--gap-sm); font-size: 14px; color: var(--ink-soft); white-space: nowrap; }
-    .filters__check input { width: auto; }
+    .picked {
+      display: flex; align-items: center; justify-content: space-between; gap: 8px;
+      padding: 9px 11px; border: 1px solid var(--p-content-border-color); border-radius: 8px;
+      background: var(--p-surface-100); font-size: 14px;
+    }
+    .results {
+      list-style: none; margin: 4px 0 0; padding: 0;
+      border: 1px solid var(--p-content-border-color); border-radius: 8px; overflow: hidden; max-height: 180px; overflow-y: auto;
+    }
+    .results button {
+      display: block; width: 100%; text-align: left; padding: 8px 11px; border: none;
+      background: var(--p-content-background); font: inherit; font-size: 14px; cursor: pointer;
+    }
+    .results button:hover { background: var(--p-surface-100); }
 
-    .cell-title { display: block; font-weight: 500; }
-    .cell-note { display: block; font-size: 12px; color: var(--ink-faint); }
-    .count { margin-top: var(--gap-sm); font-size: 13px; }
+    .filters {
+      display: flex; gap: 16px; align-items: center;
+      padding: 14px 16px; margin-bottom: 16px;
+      background: var(--p-content-background); border: 1px solid var(--p-content-border-color); border-radius: 12px;
+    }
+    .filters__check { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--p-text-muted-color); cursor: pointer; }
 
-    select { padding: 6px 8px; font-size: 13px; }
+    .empty {
+      text-align: center; padding: 60px 24px; color: var(--p-text-muted-color);
+      background: var(--p-content-background); border: 1px solid var(--p-content-border-color); border-radius: 12px;
+    }
+    .empty h3 { color: var(--p-text-color); margin-bottom: 6px; }
+    .empty p { margin: 0; }
+
+    .code { font-family: var(--font-code); font-size: 12px; color: var(--p-text-muted-color); }
+    .cell-title { display: block; font-weight: 600; }
+    .cell-note { display: block; font-size: 12px; color: var(--p-text-muted-color); }
+    .count { margin-top: 10px; font-size: 13px; color: var(--p-text-muted-color); }
+
+    :host ::ng-deep .status-select { min-width: 160px; }
+    .error-text { color: var(--p-red-500); font-size: 13px; margin: 0 0 12px; }
 
     @media (max-width: 700px) {
-      .form__grid, .form__grid--3 { grid-template-columns: 1fr; }
+      .page { padding: 18px; }
+      .form-grid, .form-grid--3 { grid-template-columns: 1fr; }
     }
   `],
 })
@@ -197,7 +233,7 @@ export class AppointmentListComponent implements OnInit, OnDestroy {
   readonly appointments = signal<AppointmentListItem[]>([]);
   readonly total = signal(0);
   readonly loading = signal(true);
-  readonly onlyUpcoming = true;
+  onlyUpcoming = true;
 
   readonly showForm = signal(false);
   readonly saving = signal(false);

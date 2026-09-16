@@ -3,6 +3,13 @@ import { Component, OnDestroy, OnInit, inject, signal } from "@angular/core";
 import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
 import { ActivatedRoute, Router, RouterLink } from "@angular/router";
 import { catchError, concatMap, from, map, of } from "rxjs";
+import { ButtonModule } from "primeng/button";
+import { CardModule } from "primeng/card";
+import { CheckboxModule } from "primeng/checkbox";
+import { InputTextModule } from "primeng/inputtext";
+import { SelectModule } from "primeng/select";
+import { TagModule } from "primeng/tag";
+import { TextareaModule } from "primeng/textarea";
 import {
   PROPERTY_PURPOSE_LABEL, PROPERTY_STATUS_LABEL, PROPERTY_TYPE_LABEL,
   PropertyPhoto, PropertyPurpose, PropertyStatus, PropertyType, UpsertPropertyRequest,
@@ -42,183 +49,170 @@ const REQUIRED_FIELDS: Record<string, string> = {
 @Component({
   selector: "app-property-form",
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink, CurrencyMaskDirective],
+  imports: [
+    ReactiveFormsModule, RouterLink, CurrencyMaskDirective, ButtonModule, CardModule,
+    SelectModule, InputTextModule, TextareaModule, CheckboxModule, TagModule,
+  ],
   template: `
     <section class="page">
-      <header class="page__head">
+      <header class="page-head">
         <div>
           <h1>{{ isEdit() ? "Editar imóvel" : "Cadastrar imóvel" }}</h1>
-          <p class="page__sub">Esses dados são o que a IA usa para responder aos clientes — mantenha atualizados.</p>
+          <p class="page-sub">Esses dados são o que a IA usa para responder aos clientes — mantenha atualizados.</p>
         </div>
-        <a routerLink="/imoveis" class="btn btn--quiet">Voltar</a>
+        <p-button label="Voltar" icon="pi pi-arrow-left" [text]="true" routerLink="/imoveis" />
       </header>
 
       @if (loadingDetail()) {
-        <p class="page__sub">Carregando imóvel...</p>
+        <p class="page-sub">Carregando imóvel...</p>
       } @else {
-        <form [formGroup]="form" (ngSubmit)="submit()" class="panel form">
-          <div class="form__grid">
-            <div class="field">
-              <label for="code">Código *</label>
-              <input id="code" formControlName="code" placeholder="AP-0101" />
-              @if (isInvalid("code")) { <span class="error-text">Campo obrigatório.</span> }
+        <p-card styleClass="form-card">
+          <form [formGroup]="form" (ngSubmit)="submit()">
+            <div class="form-grid">
+              <div class="field">
+                <label for="code">Código *</label>
+                <input pInputText id="code" formControlName="code" placeholder="AP-0101" />
+                @if (isInvalid("code")) { <span class="error-text">Campo obrigatório.</span> }
+              </div>
+              <div class="field field--wide">
+                <label for="title">Título *</label>
+                <input pInputText id="title" formControlName="title" placeholder="Apartamento 2 quartos em Boa Viagem" />
+                @if (isInvalid("title")) { <span class="error-text">Campo obrigatório.</span> }
+              </div>
             </div>
-            <div class="field field--wide">
-              <label for="title">Título *</label>
-              <input id="title" formControlName="title" placeholder="Apartamento 2 quartos em Boa Viagem" />
-              @if (isInvalid("title")) { <span class="error-text">Campo obrigatório.</span> }
-            </div>
-          </div>
 
-          <div class="field">
-            <label for="description">Descrição</label>
-            <textarea id="description" formControlName="description" rows="3"></textarea>
-          </div>
+            <div class="field">
+              <label for="description">Descrição</label>
+              <textarea pTextarea id="description" formControlName="description" rows="3"></textarea>
+            </div>
 
-          <div class="form__grid form__grid--4">
-            <div class="field">
-              <label for="type">Tipo</label>
-              <select id="type" formControlName="type">
-                @for (t of typeOptions; track t.value) {
-                  <option [ngValue]="t.value">{{ t.label }}</option>
-                }
-              </select>
+            <div class="form-grid form-grid--4">
+              <div class="field">
+                <label for="type">Tipo</label>
+                <p-select id="type" formControlName="type" [options]="typeOptions" optionLabel="label" optionValue="value" />
+              </div>
+              <div class="field">
+                <label for="purpose">Finalidade</label>
+                <p-select id="purpose" formControlName="purpose" [options]="purposeOptions" optionLabel="label" optionValue="value" />
+              </div>
+              <div class="field">
+                <label for="status">Situação</label>
+                <p-select id="status" formControlName="status" [options]="statusOptions" optionLabel="label" optionValue="value" />
+              </div>
+              <div class="field field--check">
+                <p-checkbox formControlName="acceptsFinancing" [binary]="true" inputId="acceptsFinancing" />
+                <label for="acceptsFinancing">Aceita financiamento</label>
+              </div>
             </div>
-            <div class="field">
-              <label for="purpose">Finalidade</label>
-              <select id="purpose" formControlName="purpose">
-                @for (p of purposeOptions; track p.value) {
-                  <option [ngValue]="p.value">{{ p.label }}</option>
-                }
-              </select>
-            </div>
-            <div class="field">
-              <label for="status">Situação</label>
-              <select id="status" formControlName="status">
-                @for (s of statusOptions; track s.value) {
-                  <option [ngValue]="s.value">{{ s.label }}</option>
-                }
-              </select>
-            </div>
-            <div class="field">
-              <label class="field__check">
-                <input type="checkbox" formControlName="acceptsFinancing" />
-                Aceita financiamento
-              </label>
-            </div>
-          </div>
 
-          <h3 class="form__section">Preço</h3>
-          <div class="form__grid form__grid--4">
-            <div class="field">
-              <label for="salePrice">Venda (R$)</label>
-              <input id="salePrice" type="text" inputmode="numeric" appCurrencyMask formControlName="salePrice" placeholder="0,00" />
+            <h3 class="form-section">Preço</h3>
+            <div class="form-grid form-grid--4">
+              <div class="field">
+                <label for="salePrice">Venda (R$)</label>
+                <input pInputText id="salePrice" type="text" inputmode="numeric" appCurrencyMask formControlName="salePrice" placeholder="0,00" />
+              </div>
+              <div class="field">
+                <label for="rentPrice">Aluguel (R$)</label>
+                <input pInputText id="rentPrice" type="text" inputmode="numeric" appCurrencyMask formControlName="rentPrice" placeholder="0,00" />
+              </div>
+              <div class="field">
+                <label for="condoFee">Condomínio (R$)</label>
+                <input pInputText id="condoFee" type="text" inputmode="numeric" appCurrencyMask formControlName="condoFee" placeholder="0,00" />
+              </div>
+              <div class="field">
+                <label for="propertyTax">IPTU (R$)</label>
+                <input pInputText id="propertyTax" type="text" inputmode="numeric" appCurrencyMask formControlName="propertyTax" placeholder="0,00" />
+              </div>
             </div>
-            <div class="field">
-              <label for="rentPrice">Aluguel (R$)</label>
-              <input id="rentPrice" type="text" inputmode="numeric" appCurrencyMask formControlName="rentPrice" placeholder="0,00" />
-            </div>
-            <div class="field">
-              <label for="condoFee">Condomínio (R$)</label>
-              <input id="condoFee" type="text" inputmode="numeric" appCurrencyMask formControlName="condoFee" placeholder="0,00" />
-            </div>
-            <div class="field">
-              <label for="propertyTax">IPTU (R$)</label>
-              <input id="propertyTax" type="text" inputmode="numeric" appCurrencyMask formControlName="propertyTax" placeholder="0,00" />
-            </div>
-          </div>
 
-          <h3 class="form__section">Localização</h3>
-          <div class="form__grid form__grid--4">
-            <div class="field">
-              <label for="zipCode">CEP</label>
-              <input
-                id="zipCode"
-                formControlName="zipCode"
-                maxlength="9"
-                placeholder="00000-000"
-                (input)="onCepInput($event)"
-                (blur)="lookupCep()" />
-              @if (cepLoading()) { <span class="hint-text">Consultando CEP...</span> }
-              @if (cepError()) { <span class="error-text">{{ cepError() }}</span> }
+            <h3 class="form-section">Localização</h3>
+            <div class="form-grid form-grid--4">
+              <div class="field">
+                <label for="zipCode">CEP</label>
+                <input
+                  pInputText id="zipCode" formControlName="zipCode" maxlength="9" placeholder="00000-000"
+                  (input)="onCepInput($event)" (blur)="lookupCep()" />
+                @if (cepLoading()) { <span class="hint-text">Consultando CEP...</span> }
+                @if (cepError()) { <span class="error-text">{{ cepError() }}</span> }
+              </div>
             </div>
-          </div>
-          <div class="form__grid form__grid--4">
-            <div class="field">
-              <label for="street">Rua</label>
-              <input id="street" formControlName="street" />
+            <div class="form-grid form-grid--4">
+              <div class="field">
+                <label for="street">Rua</label>
+                <input pInputText id="street" formControlName="street" />
+              </div>
+              <div class="field">
+                <label for="number">Número</label>
+                <input pInputText id="number" formControlName="number" />
+              </div>
+              <div class="field">
+                <label for="neighborhood">Bairro *</label>
+                <input pInputText id="neighborhood" formControlName="neighborhood" />
+                @if (isInvalid("neighborhood")) { <span class="error-text">Campo obrigatório.</span> }
+              </div>
+              <div class="field">
+                <label for="city">Cidade *</label>
+                <input pInputText id="city" formControlName="city" />
+                @if (isInvalid("city")) { <span class="error-text">Campo obrigatório.</span> }
+              </div>
             </div>
-            <div class="field">
-              <label for="number">Número</label>
-              <input id="number" formControlName="number" />
+            <div class="form-grid form-grid--4">
+              <div class="field">
+                <label for="state">Estado (UF) *</label>
+                <input pInputText id="state" formControlName="state" maxlength="2" placeholder="PE" />
+                @if (isInvalid("state")) { <span class="error-text">Informe a sigla com 2 letras.</span> }
+              </div>
             </div>
-            <div class="field">
-              <label for="neighborhood">Bairro *</label>
-              <input id="neighborhood" formControlName="neighborhood" />
-              @if (isInvalid("neighborhood")) { <span class="error-text">Campo obrigatório.</span> }
-            </div>
-            <div class="field">
-              <label for="city">Cidade *</label>
-              <input id="city" formControlName="city" />
-              @if (isInvalid("city")) { <span class="error-text">Campo obrigatório.</span> }
-            </div>
-          </div>
-          <div class="form__grid form__grid--4">
-            <div class="field">
-              <label for="state">Estado (UF) *</label>
-              <input id="state" formControlName="state" maxlength="2" placeholder="PE" />
-              @if (isInvalid("state")) { <span class="error-text">Informe a sigla com 2 letras.</span> }
-            </div>
-          </div>
 
-          <h3 class="form__section">Características</h3>
-          <div class="form__grid form__grid--4">
-            <div class="field">
-              <label for="bedrooms">Quartos</label>
-              <input id="bedrooms" type="number" min="0" formControlName="bedrooms" />
+            <h3 class="form-section">Características</h3>
+            <div class="form-grid form-grid--4">
+              <div class="field">
+                <label for="bedrooms">Quartos</label>
+                <input pInputText id="bedrooms" type="number" min="0" formControlName="bedrooms" />
+              </div>
+              <div class="field">
+                <label for="suites">Suítes</label>
+                <input pInputText id="suites" type="number" min="0" formControlName="suites" />
+              </div>
+              <div class="field">
+                <label for="bathrooms">Banheiros</label>
+                <input pInputText id="bathrooms" type="number" min="0" formControlName="bathrooms" />
+              </div>
+              <div class="field">
+                <label for="parkingSpots">Vagas</label>
+                <input pInputText id="parkingSpots" type="number" min="0" formControlName="parkingSpots" />
+              </div>
             </div>
-            <div class="field">
-              <label for="suites">Suítes</label>
-              <input id="suites" type="number" min="0" formControlName="suites" />
+            <div class="form-grid form-grid--3">
+              <div class="field">
+                <label for="usableArea">Área útil (m²)</label>
+                <input pInputText id="usableArea" type="number" min="0" formControlName="usableArea" />
+              </div>
+              <div class="field">
+                <label for="totalArea">Área total (m²)</label>
+                <input pInputText id="totalArea" type="number" min="0" formControlName="totalArea" />
+              </div>
+              <div class="field">
+                <label for="features">Diferenciais (separados por vírgula)</label>
+                <input pInputText id="features" formControlName="featuresText" placeholder="piscina, mobiliado, portaria 24h" />
+              </div>
             </div>
-            <div class="field">
-              <label for="bathrooms">Banheiros</label>
-              <input id="bathrooms" type="number" min="0" formControlName="bathrooms" />
-            </div>
-            <div class="field">
-              <label for="parkingSpots">Vagas</label>
-              <input id="parkingSpots" type="number" min="0" formControlName="parkingSpots" />
-            </div>
-          </div>
-          <div class="form__grid form__grid--3">
-            <div class="field">
-              <label for="usableArea">Área útil (m²)</label>
-              <input id="usableArea" type="number" min="0" formControlName="usableArea" />
-            </div>
-            <div class="field">
-              <label for="totalArea">Área total (m²)</label>
-              <input id="totalArea" type="number" min="0" formControlName="totalArea" />
-            </div>
-            <div class="field">
-              <label for="features">Diferenciais (separados por vírgula)</label>
-              <input id="features" formControlName="featuresText" placeholder="piscina, mobiliado, portaria 24h" />
-            </div>
-          </div>
 
-          @if (error()) {
-            <p class="error-text error-text--banner">{{ error() }}</p>
-          }
+            @if (error()) {
+              <p class="error-text error-text--banner">{{ error() }}</p>
+            }
 
-          <div class="form__actions">
-            <button type="submit" class="btn btn--primary" [disabled]="saving()">
-              {{ saving() ? "Salvando..." : (isEdit() ? "Salvar alterações" : "Cadastrar imóvel") }}
-            </button>
-          </div>
-        </form>
+            <div class="form-actions">
+              <p-button
+                type="submit" [label]="saving() ? 'Salvando...' : (isEdit() ? 'Salvar alterações' : 'Cadastrar imóvel')"
+                icon="pi pi-check" [disabled]="saving()" [loading]="saving()" />
+            </div>
+          </form>
+        </p-card>
 
-        <section class="panel photos">
+        <p-card styleClass="photos-card">
           <h2>Fotos</h2>
-          <p class="page__sub">
+          <p class="page-sub">
             @if (isEdit()) {
               As fotos são enviadas assim que você escolhe o arquivo.
             } @else {
@@ -226,7 +220,8 @@ const REQUIRED_FIELDS: Record<string, string> = {
             }
           </p>
 
-          <label class="photos__upload btn" [class.is-disabled]="uploading() || saving()">
+          <label class="photos-upload" [class.is-disabled]="uploading() || saving()">
+            <i class="pi" [class.pi-spin]="uploading()" [class]="uploading() ? 'pi pi-spinner' : 'pi pi-camera'"></i>
             {{ uploading() ? "Enviando..." : "Adicionar foto" }}
             <input
               type="file"
@@ -241,19 +236,19 @@ const REQUIRED_FIELDS: Record<string, string> = {
           }
 
           @if (photos().length === 0 && stagedPhotos().length === 0) {
-            <p class="page__sub">Nenhuma foto ainda.</p>
+            <p class="page-sub">Nenhuma foto ainda.</p>
           } @else {
-            <ul class="photos__grid">
+            <ul class="photos-grid">
               @for (photo of photos(); track photo.id; let i = $index) {
                 <li class="photo" [class.is-cover]="photo.isCover">
                   <img [src]="photo.url" [alt]="'Foto ' + (i + 1)" />
                   <div class="photo__actions">
                     @if (photo.isCover) {
-                      <span class="state-tag state-tag--auto">Capa</span>
+                      <p-tag value="Capa" severity="success" />
                     } @else {
-                      <button type="button" class="btn btn--quiet" (click)="setCover(photo.id)">Definir capa</button>
+                      <p-button label="Definir capa" [text]="true" size="small" (onClick)="setCover(photo.id)" />
                     }
-                    <button type="button" class="btn btn--quiet" (click)="removePhoto(photo.id)">Remover</button>
+                    <p-button icon="pi pi-trash" [text]="true" [rounded]="true" size="small" severity="danger" (onClick)="removePhoto(photo.id)" />
                   </div>
                 </li>
               }
@@ -263,54 +258,71 @@ const REQUIRED_FIELDS: Record<string, string> = {
                   <span class="photo__pending">Será enviada ao salvar</span>
                   <div class="photo__actions">
                     @if (staged.isCover) {
-                      <span class="state-tag state-tag--auto">Capa</span>
+                      <p-tag value="Capa" severity="success" />
                     } @else {
-                      <button type="button" class="btn btn--quiet" (click)="setStagedCover(staged.tempId)">Definir capa</button>
+                      <p-button label="Definir capa" [text]="true" size="small" (onClick)="setStagedCover(staged.tempId)" />
                     }
-                    <button type="button" class="btn btn--quiet" (click)="removeStagedPhoto(staged.tempId)">Remover</button>
+                    <p-button icon="pi pi-trash" [text]="true" [rounded]="true" size="small" severity="danger" (onClick)="removeStagedPhoto(staged.tempId)" />
                   </div>
                 </li>
               }
             </ul>
           }
-        </section>
+        </p-card>
       }
     </section>
   `,
   styles: [`
-    .page { padding: var(--gap-lg); max-width: 900px; }
-    .page__head { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--gap); margin-bottom: var(--gap-lg); }
-    .page__sub { color: var(--ink-soft); margin: 0 0 var(--gap-sm); }
+    .page { padding: 28px; max-width: 900px; }
+    .page-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 24px; }
+    .page-head h1 { font-size: 24px; font-weight: 700; letter-spacing: -0.02em; margin: 0 0 4px; }
+    .page-sub { color: var(--p-text-muted-color); margin: 0 0 8px; font-size: 14px; }
 
-    .form { padding: var(--gap-lg); margin-bottom: var(--gap-lg); }
-    .form__grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 var(--gap); }
-    .form__grid--3 { grid-template-columns: repeat(3, 1fr); }
-    .form__grid--4 { grid-template-columns: repeat(4, 1fr); }
+    :host ::ng-deep .form-card { margin-bottom: 24px; }
+    :host ::ng-deep .form-card .p-card-body,
+    :host ::ng-deep .photos-card .p-card-body { padding: 24px; }
+
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 16px; }
+    .form-grid--3 { grid-template-columns: repeat(3, 1fr); }
+    .form-grid--4 { grid-template-columns: repeat(4, 1fr); }
+    .field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 16px; }
+    .field label { font-size: 13px; font-weight: 600; color: var(--p-text-muted-color); }
+    .field input, .field textarea, .field p-select { width: 100%; }
     .field--wide { grid-column: span 2; }
-    .field__check { display: flex; align-items: center; gap: var(--gap-sm); font-size: 14px; margin-top: 22px; }
-    .field__check input { width: auto; }
+    .field--check { flex-direction: row; align-items: center; gap: 8px; margin-top: 22px; }
+    .field--check label { margin: 0; font-weight: 500; color: var(--p-text-color); }
 
-    .hint-text { font-size: 12px; color: var(--ink-soft); }
-    .error-text--banner { margin-top: var(--gap-sm); }
+    .hint-text { font-size: 12px; color: var(--p-text-muted-color); }
+    .error-text { color: var(--p-red-500); font-size: 13px; }
+    .error-text--banner { margin-top: 8px; }
 
-    .form__section { margin: var(--gap) 0 var(--gap-sm); padding-top: var(--gap-sm); border-top: 1px solid var(--rule); }
-    .form__actions { margin-top: var(--gap); }
+    .form-section { margin: 20px 0 10px; padding-top: 12px; border-top: 1px solid var(--p-content-border-color); font-size: 15px; font-weight: 700; }
+    .form-actions { margin-top: 16px; }
 
-    .photos { padding: var(--gap-lg); }
-    .photos h2 { margin-bottom: 4px; }
-    .photos__upload { display: inline-flex; margin-bottom: var(--gap); cursor: pointer; }
-    .photos__upload.is-disabled { opacity: 0.5; cursor: not-allowed; pointer-events: none; }
+    :host ::ng-deep .photos-card h2 { margin: 0 0 4px; font-size: 16px; font-weight: 700; }
+    .photos-upload {
+      display: inline-flex; align-items: center; gap: 8px; margin: 8px 0 16px; cursor: pointer;
+      padding: 9px 16px; border-radius: 8px; border: 1px solid var(--p-content-border-color);
+      background: var(--p-content-background); font-size: 14px; font-weight: 600; color: var(--p-text-color);
+      transition: background 0.2s ease;
+    }
+    .photos-upload:hover { background: var(--p-surface-100); }
+    .photos-upload.is-disabled { opacity: 0.5; cursor: not-allowed; pointer-events: none; }
 
-    .photos__grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: var(--gap); }
-    .photo { position: relative; border: 1px solid var(--rule); border-radius: var(--radius); overflow: hidden; }
-    .photo.is-cover { border-color: var(--state-auto); }
+    .photos-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 14px; }
+    .photo { position: relative; border: 1px solid var(--p-content-border-color); border-radius: 10px; overflow: hidden; }
+    .photo.is-cover { border-color: var(--p-green-500); }
     .photo--staged { border-style: dashed; }
     .photo img { width: 100%; height: 120px; object-fit: cover; display: block; }
     .photo__actions { display: flex; justify-content: space-between; align-items: center; gap: 4px; padding: 6px; font-size: 12px; }
-    .photo__pending { position: absolute; top: 6px; left: 6px; padding: 2px 6px; border-radius: 100px; background: var(--state-wait-bg); color: var(--state-wait); font-size: 11px; font-weight: 500; }
+    .photo__pending {
+      position: absolute; top: 6px; left: 6px; padding: 2px 8px; border-radius: 100px;
+      background: var(--p-orange-100); color: var(--p-orange-700); font-size: 11px; font-weight: 600;
+    }
 
     @media (max-width: 700px) {
-      .form__grid, .form__grid--3, .form__grid--4 { grid-template-columns: 1fr; }
+      .page { padding: 18px; }
+      .form-grid, .form-grid--3, .form-grid--4 { grid-template-columns: 1fr; }
       .field--wide { grid-column: span 1; }
     }
   `],
