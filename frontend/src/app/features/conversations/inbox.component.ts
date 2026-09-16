@@ -130,7 +130,7 @@ import { ConversationService } from "../../core/services/conversation.service";
     </div>
   `,
   styles: [`
-    .inbox { display: grid; grid-template-columns: 340px 1fr; height: 100dvh; }
+    .inbox { display: grid; grid-template-columns: 340px 1fr; height: 100%; }
 
     .queue { border-right: 1px solid var(--rule); background: var(--surface); overflow-y: auto; min-height: 0; }
     .queue__head { padding: var(--gap); border-bottom: 1px solid var(--rule); position: sticky; top: 0; background: var(--surface); }
@@ -197,7 +197,7 @@ import { ConversationService } from "../../core/services/conversation.service";
       .inbox {
         grid-template-columns: 1fr;
         grid-template-rows: auto 1fr;
-        height: calc(100dvh - 56px);
+        height: 100%;
       }
       .queue { border-right: none; border-bottom: 1px solid var(--rule); max-height: 38vh; }
     }

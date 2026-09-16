@@ -94,9 +94,9 @@ const BASE_NAV: NavItem[] = [
     </div>
   `,
   styles: [`
-    :host { display: block; }
+    :host { display: block; height: 100dvh; overflow: hidden; }
 
-    .shell { min-height: 100vh; background: var(--canvas); }
+    .shell { height: 100%; background: var(--canvas); }
 
     /* --- barra lateral desktop: fixa, independente do fluxo do conteudo --- */
     .rail--desktop {
@@ -163,7 +163,7 @@ const BASE_NAV: NavItem[] = [
       background: var(--surface-sunken); color: var(--ink); cursor: pointer; font-size: 16px;
     }
 
-    .content { margin-left: 216px; min-height: 100vh; min-width: 0; }
+    .content { margin-left: 216px; height: 100%; overflow-y: auto; min-width: 0; }
 
     @media (max-width: 900px) {
       .rail--desktop { display: none; }

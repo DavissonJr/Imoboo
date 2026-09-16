@@ -1,12 +1,14 @@
 import { Component, inject, signal } from "@angular/core";
 import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
 import { Router, RouterLink } from "@angular/router";
+import { ButtonModule } from "primeng/button";
+import { InputTextModule } from "primeng/inputtext";
 import { AuthService } from "../../core/services/auth.service";
 
 @Component({
   selector: "app-login",
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, ButtonModule, InputTextModule],
   template: `
     <div class="login">
       <aside class="login__brand">
@@ -22,7 +24,7 @@ import { AuthService } from "../../core/services/auth.service";
           </p>
         </div>
 
-        <a routerLink="/" class="login__back">← Voltar para o início</a>
+        <a routerLink="/" class="login__back"><i class="pi pi-arrow-left"></i> Voltar para o início</a>
       </aside>
 
       <main class="login__main">
@@ -32,21 +34,21 @@ import { AuthService } from "../../core/services/auth.service";
 
           <div class="field">
             <label for="email">E-mail</label>
-            <input id="email" type="email" formControlName="email" autocomplete="username" placeholder="voce@suaimobiliaria.com" />
+            <input pInputText id="email" type="email" formControlName="email" autocomplete="username" placeholder="voce@suaimobiliaria.com" />
           </div>
 
           <div class="field">
             <label for="password">Senha</label>
-            <input id="password" type="password" formControlName="password" autocomplete="current-password" />
+            <input pInputText id="password" type="password" formControlName="password" autocomplete="current-password" />
           </div>
 
           @if (error()) {
             <p class="error-text">{{ error() }}</p>
           }
 
-          <button type="submit" class="btn btn--primary" [disabled]="form.invalid || loading()">
-            {{ loading() ? "Entrando..." : "Entrar" }}
-          </button>
+          <p-button
+            type="submit" label="Entrar" icon="pi pi-arrow-right" iconPos="right"
+            [disabled]="form.invalid || loading()" [loading]="loading()" styleClass="full-width" />
 
           <p class="login__hint">
             Ainda não tem acesso? <a href="https://wa.me/5581996533458" target="_blank" rel="noopener">Fale com a gente</a>.
@@ -66,7 +68,7 @@ import { AuthService } from "../../core/services/auth.service";
       display: block;
     }
 
-    .login { display: grid; grid-template-columns: 1fr 1fr; min-height: 100vh; }
+    .login { display: grid; grid-template-columns: 1fr 1fr; min-height: 100dvh; }
 
     /* --- painel de marca --- */
     .login__brand {
@@ -89,21 +91,26 @@ import { AuthService } from "../../core/services/auth.service";
     }
     .login__sub { color: var(--lg-ink-soft); font-size: 15px; line-height: 1.6; margin: 0; }
     .login__back {
-      position: relative; color: var(--lg-ink-soft); font-size: 14px; text-decoration: none; width: fit-content;
+      position: relative; display: flex; align-items: center; gap: 8px;
+      color: var(--lg-ink-soft); font-size: 14px; text-decoration: none; width: fit-content;
+      transition: color 0.2s ease, gap 0.2s ease;
     }
-    .login__back:hover { color: var(--lg-paper); }
+    .login__back:hover { color: var(--lg-paper); gap: 11px; text-decoration: none; }
 
     /* --- painel do formulario --- */
-    .login__main { display: grid; place-items: center; padding: var(--gap); background: var(--canvas); }
+    .login__main { display: grid; place-items: center; padding: 20px; background: var(--p-surface-50); }
     .login__card { width: 100%; max-width: 360px; }
-    .login__card h1 { font-family: var(--font-serif); font-size: 28px; margin-bottom: 4px; }
-    .login__lede { color: var(--ink-soft); margin-bottom: var(--gap-lg); }
-    .login__hint { text-align: center; font-size: 13px; color: var(--ink-soft); margin-top: var(--gap); }
+    .login__card h1 { font-family: var(--font-serif); font-size: 28px; margin: 0 0 4px; }
+    .login__lede { color: var(--p-text-muted-color); margin: 0 0 24px; font-size: 14px; }
+    .login__hint { text-align: center; font-size: 13px; color: var(--p-text-muted-color); margin-top: 16px; }
     .login__hint a { color: var(--lg-brass); font-weight: 600; }
 
-    .btn { width: 100%; justify-content: center; }
-    .btn--primary { background: var(--lg-ink); }
-    .btn--primary:hover:not(:disabled) { background: #0d1017; }
+    .field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 16px; }
+    .field label { font-size: 13px; font-weight: 600; color: var(--p-text-muted-color); }
+    .field input { width: 100%; }
+
+    .error-text { color: var(--p-red-500); font-size: 13px; margin: 0 0 12px; }
+    :host ::ng-deep .full-width { width: 100%; justify-content: center; }
 
     @media (max-width: 820px) {
       .login { grid-template-columns: 1fr; }
